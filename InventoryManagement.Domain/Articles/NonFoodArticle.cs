@@ -9,8 +9,6 @@ namespace InventoryManagement.Domain.Articles
 {
     public sealed class NonFoodArticle : Article
     {
-        public PackagingLevel PackagingLevel { get; private set; }
-
 
         private NonFoodArticle()
         {
@@ -20,24 +18,21 @@ namespace InventoryManagement.Domain.Articles
         private NonFoodArticle(
             Ean13Reference reference,
             string name,
-            Money priceExcludingTax,
-            PackagingLevel packagingLevel)
+            Money priceExcludingTax)
             : base(reference, name, priceExcludingTax)
         {
-            PackagingLevel = packagingLevel;
         }
 
         public static NonFoodArticle Create(
             Ean13Reference reference,
             string name,
-            Money priceExcludingTax,
-            PackagingLevel packagingLevel)
+            Money priceExcludingTax
+        )
         {
             return new NonFoodArticle(
                 reference,
                 name,
-                priceExcludingTax,
-                packagingLevel);
+                priceExcludingTax);
         }
 
         public override VatRate GetVatRate(SaleMode saleMode)

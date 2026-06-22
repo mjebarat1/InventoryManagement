@@ -13,10 +13,6 @@ namespace InventoryManagement.Infrastructure.Persistence.Configurations.Article
     {
         public void Configure(EntityTypeBuilder<NonFoodArticle> builder)
         {
-            builder.Property(article => article.PackagingLevel)
-                .HasConversion<string>()
-                .HasMaxLength(50)
-                .IsRequired();
         }
     }
 }
