@@ -55,3 +55,7 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+/InventoryManagement/.vs/InventoryManagement
+/.vs/InventoryManagement
+/.vs/ProjectEvaluation
+/data
