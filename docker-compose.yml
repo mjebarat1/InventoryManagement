@@ -1,0 +1,8 @@
+services:
+  inventorymanagement.api:
+    image: ${DOCKER_REGISTRY-}inventorymanagementapi
+    build:
+      context: .
+      dockerfile: InventoryManagement.Api/Dockerfile
+    volumes:
+      - ./data:/app/data

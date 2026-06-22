@@ -1,4 +1,4 @@
-# Stock Management
+﻿# Stock Management
 
 ## Présentation
 
@@ -133,7 +133,7 @@ Le prix TTC est calculé à partir du prix HT et du taux de TVA applicable.
 
 ### TVA
 
-Les règles de TVA sont considérées comme des règles métier du domaine :
+Les règles de TVA sont considérées comme des règles métier du domaine (Je les ai mis en dur dans le code pour gagner du temps) :
 
 * article alimentaire à emporter : 5,5 %
 * article alimentaire sur place : 10 %
@@ -202,10 +202,6 @@ Pour les articles non alimentaires, les unités avec un packaging `Unsellable` n
 L’inventaire permet d’aligner le système avec la réalité constatée dans l’entrepôt.
 
 L’inventaire n’est pas seulement une quantité globale : il peut être réalisé par catégorie de stock.
-
-Pour un article alimentaire, l’inventaire peut être fait par DLC.
-
-Pour un article non alimentaire, l’inventaire peut être fait par niveau de packaging.
 
 ### Vente
 
@@ -465,15 +461,6 @@ Le code final a été relu, adapté et organisé manuellement.
 
 ## Fonctionnalités réalisées
 
-* Création d’articles alimentaires
-* Création d’articles non alimentaires
-* Recherche / listing des articles
-* Saisie d’un approvisionnement
-* Saisie d’une vente
-* Saisie d’un inventaire
-* Consultation de l’historique des mouvements
-* Calcul du stock physique
-* Calcul du stock vendable
 
 ---
 

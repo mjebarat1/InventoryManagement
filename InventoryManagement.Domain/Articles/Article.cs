@@ -1,0 +1,48 @@
+﻿using InventoryManagement.Domain.Shared.Exceptions;
+using InventoryManagement.Domain.Shared.ValueObjects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace InventoryManagement.Domain.Articles
+{
+    public abstract class Article
+    {
+        public Guid Id { get; private set; }
+        public Ean13Reference Reference { get; private set; }
+        public string Name { get; private set; }
+        public Money PriceExcludingTax { get; private set; }
+
+        public ICollection<StockMovement.StockMovement> StockMovements { get; private set; }
+
+        protected Article()
+        {
+            // EF Core
+        }
+
+        protected Article(
+            Ean13Reference reference,
+            string name,
+            Money priceExcludingTax)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new BusinessRuleException("Le nom de l'article est obligatoire.");
+
+            Id = Guid.NewGuid();
+            Reference = reference;
+            Name = name.Trim();
+            PriceExcludingTax = priceExcludingTax;
+            StockMovements = new List<StockMovement.StockMovement>();
+        }
+
+        public abstract VatRate GetVatRate(SaleMode saleMode);
+
+        public Money GetPriceIncludingTax(SaleMode saleMode)
+        {
+            return PriceExcludingTax.AddVat(GetVatRate(saleMode));
+        }
+
+    }
+}
