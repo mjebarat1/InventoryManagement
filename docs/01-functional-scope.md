@@ -41,9 +41,10 @@ Le numéro de référence suit le format EAN-13.
 
 Un article alimentaire possède :
 
-- une DLC, c’est-à-dire une date limite de consommation ;
 - une indication de vente à emporter ;
 - une indication de vente sur place si nécessaire selon le modèle retenu.
+
+La DLC est portée par chaque mouvement d’approvisionnement alimentaire, et non par la fiche article.
 
 La TVA dépend du mode de vente :
 
@@ -56,7 +57,7 @@ Si un article peut être vendu dans plusieurs modes, le modèle doit permettre d
 
 ## Articles non alimentaires
 
-Un article non alimentaire possède un niveau de packaging :
+Le niveau de packaging d’un article non alimentaire est porté par chaque mouvement d’approvisionnement :
 
 - neuf ;
 - reconditionné ;

@@ -69,7 +69,9 @@ Le module `InventoryManagement.Client/src/api/http-client.ts` :
 
 Les futurs modules fonctionnels, par exemple `articles-api.ts`, devront réutiliser `apiRequest` au lieu d'appeler `fetch` depuis les composants.
 
-Aucun module Articles n'est encore exposé, car aucun endpoint de consultation n'est documenté dans `docs/backend/api.md`.
+Le module `src/api/articles-api.ts` centralise la création alimentaire et non alimentaire, la recherche paginée et la consultation d'une fiche par identifiant.
+
+Après une création, le client utilise uniquement l'identifiant retourné puis recharge la fiche avec `GET /api/articles/{id}`. La fiche est ainsi identique qu'elle soit ouverte après création ou depuis la grille.
 
 ### CORS
 

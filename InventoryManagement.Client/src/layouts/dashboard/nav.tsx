@@ -51,7 +51,8 @@ export function NavDesktop({
         flexDirection: 'column',
         zIndex: 'var(--layout-nav-zIndex)',
         width: 'var(--layout-nav-vertical-width)',
-        borderRight: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+        borderRight: `1px solid ${varAlpha(theme.vars.palette.primary.mainChannel, 0.16)}`,
+        background: `linear-gradient(180deg, ${varAlpha(theme.vars.palette.primary.lighterChannel, 0.72)} 0%, ${theme.vars.palette.background.paper} 42%)`,
         [theme.breakpoints.up(layoutQuery)]: {
           display: 'flex',
         },
@@ -154,10 +155,11 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
                         minHeight: 44,
                         ...(isActived && {
                           fontWeight: 'fontWeightSemiBold',
-                          color: theme.vars.palette.primary.main,
-                          bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
+                          color: theme.vars.palette.common.white,
+                          bgcolor: theme.vars.palette.primary.main,
+                          boxShadow: theme.vars.customShadows.primary,
                           '&:hover': {
-                            bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.16),
+                            bgcolor: theme.vars.palette.primary.dark,
                           },
                         }),
                       }),

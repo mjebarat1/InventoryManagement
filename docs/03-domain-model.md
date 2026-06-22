@@ -73,9 +73,7 @@ Elle ne doit pas être codée uniquement dans le controller ou le client.
 
 ## Article alimentaire
 
-Un article alimentaire possède une DLC.
-
-La DLC est obligatoire pour ce type d’article.
+La DLC n’est pas une propriété de la fiche article. Elle est obligatoire sur chaque mouvement d’approvisionnement alimentaire.
 
 Il peut être :
 
@@ -89,7 +87,7 @@ Le modèle doit être explicite sur ce point.
 
 ## Article non alimentaire
 
-Un article non alimentaire possède un niveau de packaging.
+Le niveau de packaging n’est pas une propriété de la fiche article. Il est obligatoire sur les mouvements d’approvisionnement non alimentaire.
 
 Valeurs identifiées :
 
@@ -161,8 +159,8 @@ Les invariants à préserver sont notamment :
 - un nom d’article est obligatoire ;
 - un prix HT ne doit pas être négatif ;
 - une quantité ne doit pas être négative lorsqu’elle représente une quantité saisie ;
-- une DLC est obligatoire pour un article alimentaire ;
-- un packaging est obligatoire pour un article non alimentaire ;
+- une DLC est obligatoire pour un approvisionnement alimentaire ;
+- un packaging est obligatoire pour un approvisionnement non alimentaire ;
 - une vente ne doit pas rendre le stock incohérent, sauf choix fonctionnel documenté.
 
 ---

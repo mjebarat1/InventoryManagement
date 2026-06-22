@@ -1,5 +1,8 @@
 ﻿using InventoryManagement.Application.Articles.CreateFoodArticle;
 using InventoryManagement.Application.Ports.In;
+using InventoryManagement.Application.Articles.CreateNonFoodArticle;
+using InventoryManagement.Application.Articles.GetArticleById;
+using InventoryManagement.Application.Articles.SearchArticles;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -14,6 +17,9 @@ namespace InventoryManagement.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<ICreateFoodArticleUseCase, CreateFoodArticleUseCase>();
+            services.AddScoped<ICreateNonFoodArticleUseCase, CreateNonFoodArticleUseCase>();
+            services.AddScoped<IGetArticleByIdUseCase, GetArticleByIdUseCase>();
+            services.AddScoped<ISearchArticlesUseCase, SearchArticlesUseCase>();
 
             return services;
         }

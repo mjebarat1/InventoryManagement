@@ -74,6 +74,18 @@ Pages envisageables :
 
 Tout n’est pas obligatoire pour l’exercice.
 
+## Parcours Articles implémenté
+
+La page Articles appelle la recherche avec une pagination configurable, limitée à 100 lignes, des filtres sur la référence, le nom et le type, ainsi qu'un tri contrôlé.
+
+Le formulaire de création est unique et adapte les modes de vente au type sélectionné. La fiche article est une route autonome utilisée après création et depuis la grille. Les actions d'approvisionnement, vente et inventaire sont visibles mais désactivées jusqu'à l'implémentation de leurs scénarios.
+
+Les stocks vendable et non vendable sont affichés comme indisponibles tant que leur calcul backend n'est pas implémenté.
+
+## Identité visuelle
+
+Le client conserve le thème Minimal existant avec une palette bleu indigo, des accents turquoise et des couleurs sémantiques. Les bandeaux de pages utilisent un dégradé, la navigation active reprend la couleur primaire et les cards de synthèse distinguent visuellement stock, prix et TVA. Les types d'article et états sont présentés avec des badges colorés, sans modifier les règles métier.
+
 ---
 
 ## Règle pour les agents IA

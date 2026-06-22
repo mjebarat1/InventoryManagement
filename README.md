@@ -489,11 +489,18 @@ L’IA a été utilisée pour :
 
 Le code final a été relu, adapté et organisé manuellement.
 
+Pour le scénario d'ajout et de consultation d'article, Codex a été utilisé pour l'analyse, la génération de code backend/frontend, les tests et la documentation. Les contrats API, les limites fonctionnelles et les choix d'affichage doivent être relus et validés humainement avant livraison.
+
 ---
 
 
 ## Fonctionnalités réalisées
 
+- création d'articles alimentaires et non alimentaires ;
+- recherche d'articles paginée, filtrée et triée ;
+- consultation d'une fiche article et de ses mouvements ;
+- formulaire client adaptatif et navigation entre la grille et la fiche ;
+- interface française et anglaise.
 
 ---
 

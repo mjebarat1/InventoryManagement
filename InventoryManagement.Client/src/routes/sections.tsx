@@ -13,6 +13,8 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
 export const ArticlesPage = lazy(() => import('src/pages/articles'));
+export const ArticleCreatePage = lazy(() => import('src/pages/article-create'));
+export const ArticleDetailsPage = lazy(() => import('src/pages/article-details'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -47,6 +49,8 @@ export const routesSection: RouteObject[] = [
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'articles', element: <ArticlesPage /> },
+      { path: 'articles/new', element: <ArticleCreatePage /> },
+      { path: 'articles/:id', element: <ArticleDetailsPage /> },
     ],
   },
   {

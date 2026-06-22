@@ -14,7 +14,7 @@
   },
   "articles": {
     "title": "Articles",
-    "description": "The list will be displayed here when the read endpoint is available.",
+    "description": "Search, sort and view registered articles.",
     "addArticle": "Add an article",
     "addArticleUnavailable": "The add form will be enabled when its API integration is implemented.",
     "reference": "Reference",
@@ -27,8 +27,33 @@
     "status": "Status",
     "actions": "Actions",
     "noData": "No articles to display",
-    "apiUnavailable": "The API does not yet provide a documented endpoint for listing articles."
+    "apiUnavailable": "The API does not yet provide a documented endpoint for listing articles.",
+    "view": "View",
+    "rowsPerPage": "Rows per page"
   },
+  "articleTypes": { "food": "Food", "nonFood": "Non-food" },
+  "saleModes": { "takeAway": "Take away", "onSite": "On site" },
+  "articleCreate": {
+    "title": "Add an article",
+    "allowedSaleModes": "Allowed sale modes",
+    "success": "Article created successfully.",
+    "validation": {
+      "reference": "The reference must contain exactly 13 digits.",
+      "name": "The name is required.",
+      "price": "The price excluding tax must be zero or positive.",
+      "saleMode": "Select at least one sale mode."
+    }
+  },
+  "articleDetails": {
+    "title": "Article details", "notFound": "Article not found.", "backToList": "Back to articles",
+    "totalStock": "Total stock", "sellableStock": "Sellable stock", "nonSellableStock": "Non-sellable stock",
+    "movements": "Stock movements", "date": "Date", "movementType": "Movement type",
+    "quantity": "Quantity", "expirationDate": "Expiration date", "packaging": "Packaging", "comment": "Comment",
+    "noMovements": "No stock movement for this article.",
+    "supply": "Supply", "sale": "Record a sale", "inventory": "Take inventory"
+  },
+  "movementTypes": { "FoodSupply": "Food supply", "NonFoodSupply": "Non-food supply", "Sale": "Sale", "Inventory": "Inventory", "Unknown": "Unknown" },
+  "packaging": { "New": "New", "Refurbished": "Refurbished", "Unsellable": "Unsellable" },
   "apiAvailability": {
     "title": "Waiting for the API",
     "description": "The server is not available yet. A new attempt is made automatically every 2 seconds."
@@ -40,7 +65,9 @@
     "cancel": "Cancel",
     "search": "Search",
     "noData": "No data",
-    "backToHome": "Back to home"
+    "backToHome": "Back to home",
+    "all": "All",
+    "unavailable": "Unavailable"
   },
   "errors": {
     "notFoundTitle": "Page not found",

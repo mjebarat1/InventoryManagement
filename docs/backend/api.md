@@ -72,7 +72,36 @@ Ajouter ici les endpoints existants.
 
 | Méthode | Route | Description | Statut |
 |---|---|---|---|
-| À compléter | À compléter | À compléter | À compléter |
+| POST | `/api/articles/food` | Crée un article alimentaire | Implémenté |
+| POST | `/api/articles/non-food` | Crée un article non alimentaire | Implémenté |
+| POST | `/api/articles/search` | Recherche paginée, filtrée et triée | Implémenté |
+| GET | `/api/articles/{id}` | Consulte une fiche article et ses mouvements | Implémenté |
+
+### Création d'article
+
+Les deux endpoints attendent `reference`, `name` et `priceExcludingTax`. La création alimentaire attend également `saleModes`. La création non alimentaire refuse les propriétés JSON inconnues afin d'empêcher l'envoi de données alimentaires, d'une DLC ou d'un packaging.
+
+Une création réussie retourne `201 Created` avec `{ "id": "..." }`.
+
+### POST /api/articles/search
+
+```json
+{
+  "pageNumber": 1,
+  "pageSize": 20,
+  "sortBy": "Reference",
+  "sortDirection": "Asc",
+  "type": "Food",
+  "reference": null,
+  "name": null
+}
+```
+
+`pageSize` doit être compris entre 1 et 100. Les filtres sont facultatifs. Les tris autorisés sont `Reference`, `Name`, `Type` et `PriceExcludingTax`. La réponse contient `items`, `pageNumber`, `pageSize`, `totalItems` et `totalPages`.
+
+### GET /api/articles/{id}
+
+Retourne les informations principales, les tarifs calculés par mode de vente, le stock total et les mouvements. `sellableStock` et `nonSellableStock` restent `null` tant que leurs règles métier ne sont pas implémentées. Retourne `404 Not Found` lorsque l'article n'existe pas.
 
 ### Stock
 

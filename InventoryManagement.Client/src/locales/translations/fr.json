@@ -14,7 +14,7 @@
   },
   "articles": {
     "title": "Articles",
-    "description": "La liste sera affichée ici lorsque l’endpoint de consultation sera disponible.",
+    "description": "Recherchez, triez et consultez les articles enregistrés.",
     "addArticle": "Ajouter un article",
     "addArticleUnavailable": "Le formulaire d’ajout sera activé lors de son intégration à l’API.",
     "reference": "Référence",
@@ -27,8 +27,33 @@
     "status": "Statut",
     "actions": "Actions",
     "noData": "Aucun article à afficher",
-    "apiUnavailable": "L’API ne fournit pas encore d’endpoint documenté pour consulter les articles."
+    "apiUnavailable": "L’API ne fournit pas encore d’endpoint documenté pour consulter les articles.",
+    "view": "Consulter",
+    "rowsPerPage": "Lignes par page"
   },
+  "articleTypes": { "food": "Alimentaire", "nonFood": "Non alimentaire" },
+  "saleModes": { "takeAway": "À emporter", "onSite": "Sur place" },
+  "articleCreate": {
+    "title": "Ajouter un article",
+    "allowedSaleModes": "Modes de vente autorisés",
+    "success": "Article créé avec succès.",
+    "validation": {
+      "reference": "La référence doit contenir exactement 13 chiffres.",
+      "name": "Le nom est obligatoire.",
+      "price": "Le prix HT doit être un montant positif ou nul.",
+      "saleMode": "Sélectionnez au moins un mode de vente."
+    }
+  },
+  "articleDetails": {
+    "title": "Fiche article", "notFound": "Article introuvable.", "backToList": "Retour aux articles",
+    "totalStock": "Stock total", "sellableStock": "Stock vendable", "nonSellableStock": "Stock non vendable",
+    "movements": "Mouvements de stock", "date": "Date", "movementType": "Type de mouvement",
+    "quantity": "Quantité", "expirationDate": "DLC", "packaging": "Packaging", "comment": "Commentaire",
+    "noMovements": "Aucun mouvement de stock pour cet article.",
+    "supply": "Approvisionner", "sale": "Déclarer une vente", "inventory": "Faire un inventaire"
+  },
+  "movementTypes": { "FoodSupply": "Approvisionnement alimentaire", "NonFoodSupply": "Approvisionnement non alimentaire", "Sale": "Vente", "Inventory": "Inventaire", "Unknown": "Inconnu" },
+  "packaging": { "New": "Neuf", "Refurbished": "Reconditionné", "Unsellable": "Invendable" },
   "apiAvailability": {
     "title": "En attente de l’API",
     "description": "Le serveur n’est pas encore disponible. Une nouvelle tentative est effectuée automatiquement toutes les 2 secondes."
@@ -40,7 +65,9 @@
     "cancel": "Annuler",
     "search": "Rechercher",
     "noData": "Aucune donnée",
-    "backToHome": "Retour à l’accueil"
+    "backToHome": "Retour à l’accueil",
+    "all": "Tous",
+    "unavailable": "Non disponible"
   },
   "errors": {
     "notFoundTitle": "Page introuvable",

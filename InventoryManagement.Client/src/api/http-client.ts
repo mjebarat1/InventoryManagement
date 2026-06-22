@@ -30,7 +30,8 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, response.statusText || 'API request failed');
+    const problem = await response.json().catch(() => null) as { detail?: string } | null;
+    throw new ApiError(response.status, problem?.detail || response.statusText || 'API request failed');
   }
 
   if (response.status === 204) {

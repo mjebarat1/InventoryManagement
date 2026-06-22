@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace InventoryManagement.Application.Articles.CreateFoodArticle
 {
-    internal class CreateFoodArticleUseCase : ICreateFoodArticleUseCase
+    public class CreateFoodArticleUseCase : ICreateFoodArticleUseCase
     {
         private readonly IArticleRepository _articleRepository;
         public CreateFoodArticleUseCase(IArticleRepository articleRepository)

@@ -24,10 +24,11 @@ const MuiButton: Components<Theme>['MuiButton'] = {
   styleOverrides: {
     containedInherit: ({ theme }) => ({
       color: theme.vars.palette.common.white,
-      backgroundColor: theme.vars.palette.grey[800],
+      backgroundColor: theme.vars.palette.primary.main,
+      boxShadow: theme.vars.customShadows.primary,
       '&:hover': {
         color: theme.vars.palette.common.white,
-        backgroundColor: theme.vars.palette.grey[800],
+        backgroundColor: theme.vars.palette.primary.dark,
       },
     }),
     sizeLarge: {
@@ -41,7 +42,8 @@ const MuiCard: Components<Theme>['MuiCard'] = {
     root: ({ theme }) => ({
       zIndex: 0,
       position: 'relative',
-      boxShadow: theme.vars.customShadows.card,
+      border: `1px solid ${varAlpha(theme.vars.palette.primary.mainChannel, 0.1)}`,
+      boxShadow: `0 12px 32px -16px ${varAlpha(theme.vars.palette.primary.mainChannel, 0.3)}`,
       borderRadius: theme.shape.borderRadius * 2,
     }),
   },
@@ -81,9 +83,9 @@ const MuiTableCell: Components<Theme>['MuiTableCell'] = {
   styleOverrides: {
     head: ({ theme }) => ({
       fontSize: theme.typography.pxToRem(14),
-      color: theme.vars.palette.text.secondary,
       fontWeight: theme.typography.fontWeightSemiBold,
-      backgroundColor: theme.vars.palette.background.neutral,
+      color: theme.vars.palette.primary.dark,
+      backgroundColor: varAlpha(theme.vars.palette.primary.mainChannel, 0.1),
     }),
   },
 };

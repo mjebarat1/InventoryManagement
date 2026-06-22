@@ -79,6 +79,7 @@ export function DashboardLayout({
         slots={{ ...headerSlots, ...slotProps?.header?.slots }}
         slotProps={merge(headerSlotProps, slotProps?.header?.slotProps ?? {})}
         sx={slotProps?.header?.sx}
+        style={{ borderBottom: `1px solid ${theme.vars.palette.primary.lighter}` }}
       />
     );
   };
