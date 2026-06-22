@@ -1,0 +1,56 @@
+{
+  "app": {
+    "name": "Stock management",
+    "description": "Article and stock management back office"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "articles": "Articles"
+  },
+  "dashboard": {
+    "title": "Welcome to stock management",
+    "description": "This interface is the back-office entry point. Article management will be connected to the API as endpoints become available.",
+    "openArticles": "View articles"
+  },
+  "articles": {
+    "title": "Articles",
+    "description": "The list will be displayed here when the read endpoint is available.",
+    "addArticle": "Add an article",
+    "addArticleUnavailable": "The add form will be enabled when its API integration is implemented.",
+    "reference": "Reference",
+    "name": "Name",
+    "type": "Type",
+    "priceExcludingTax": "Price excl. tax",
+    "priceIncludingTax": "Price incl. tax",
+    "vat": "VAT",
+    "stock": "Stock",
+    "status": "Status",
+    "actions": "Actions",
+    "noData": "No articles to display",
+    "apiUnavailable": "The API does not yet provide a documented endpoint for listing articles."
+  },
+  "apiAvailability": {
+    "title": "Waiting for the API",
+    "description": "The server is not available yet. A new attempt is made automatically every 2 seconds."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "noData": "No data",
+    "backToHome": "Back to home"
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The requested page does not exist or has been moved.",
+    "unexpectedTitle": "Unexpected application error",
+    "unknownTitle": "Unknown error"
+  },
+  "languages": {
+    "selector": "Change language",
+    "fr": "Français",
+    "en": "English"
+  }
+}

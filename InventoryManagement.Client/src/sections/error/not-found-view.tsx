@@ -5,11 +5,13 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 
+import { useTranslate } from 'src/locales';
+
 import { Logo } from 'src/components/logo';
 
-// ----------------------------------------------------------------------
-
 export function NotFoundView() {
+  const { t } = useTranslate();
+
   return (
     <>
       <Logo sx={{ position: 'fixed', top: 20, left: 20 }} />
@@ -25,26 +27,21 @@ export function NotFoundView() {
         }}
       >
         <Typography variant="h3" sx={{ mb: 2 }}>
-          Sorry, page not found!
+          {t('errors.notFoundTitle')}
         </Typography>
 
         <Typography sx={{ color: 'text.secondary', maxWidth: 480, textAlign: 'center' }}>
-          Sorry, we couldn’t find the page you’re looking for. Perhaps you’ve mistyped the URL? Be
-          sure to check your spelling.
+          {t('errors.notFoundDescription')}
         </Typography>
 
         <Box
           component="img"
           src="/assets/illustrations/illustration-404.svg"
-          sx={{
-            width: 320,
-            height: 'auto',
-            my: { xs: 5, sm: 10 },
-          }}
+          sx={{ width: 320, height: 'auto', my: { xs: 5, sm: 10 } }}
         />
 
         <Button component={RouterLink} href="/" size="large" variant="contained" color="inherit">
-          Go to home
+          {t('common.backToHome')}
         </Button>
       </Container>
     </>

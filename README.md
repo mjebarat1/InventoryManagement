@@ -336,6 +336,39 @@ L’API est ensuite accessible via Swagger :
 https://localhost:xxxx/swagger
 ```
 
+### Lancer le client
+
+Le client nécessite Node.js 20 ou supérieur.
+
+```bash
+cd InventoryManagement.Client
+npm install
+```
+
+L'URL de l'API est configurée avec `VITE_API_BASE_URL`. La valeur locale actuelle est :
+
+```txt
+VITE_API_BASE_URL=https://localhost:7280
+```
+
+Le fichier `.env.example` documente cette variable et `.env.development` fournit la configuration de développement local.
+
+```bash
+npm run dev
+```
+
+Pour compiler le client :
+
+```bash
+npm run build
+```
+
+Au chargement, le client appelle `GET /api/ping`. Tant que l'API n'est pas joignable, un écran d'attente est affiché et une nouvelle tentative est effectuée toutes les 2 secondes.
+
+La configuration CORS locale autorise le serveur Vite sur `http://localhost:3039` et `http://127.0.0.1:3039`.
+
+Docker publie également l'API en HTTP sur `http://localhost:58995`, mais le client utilise directement l'endpoint HTTPS afin d'éviter une redirection HTTP vers HTTPS pendant les appels CORS.
+
 ---
 
 ## Base de données et migrations

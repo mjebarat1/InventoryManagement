@@ -1,9 +1,9 @@
 {
-  "name": "@minimal/material-kit-react",
-  "author": "minimals.cc",
+  "name": "inventory-management-client",
+  "description": "Stock management back-office client",
   "licence": "MIT",
   "version": "3.0.0",
-  "private": false,
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -39,10 +39,13 @@
     "apexcharts": "^4.5.0",
     "dayjs": "^1.11.13",
     "es-toolkit": "^1.34.1",
+    "i18next": "^26.3.1",
+    "i18next-browser-languagedetector": "^8.2.1",
     "minimal-shared": "^1.0.7",
     "react": "^19.1.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^17.0.8",
     "react-router-dom": "^7.4.1",
     "simplebar-react": "^3.3.0"
   },

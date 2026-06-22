@@ -4,17 +4,25 @@ import { useRouteError, isRouteErrorResponse } from 'react-router';
 
 import GlobalStyles from '@mui/material/GlobalStyles';
 
+import { useTranslate } from 'src/locales';
+
 // ----------------------------------------------------------------------
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const { t } = useTranslate();
 
   return (
     <>
       {inputGlobalStyles()}
 
       <div className={errorBoundaryClasses.root}>
-        <div className={errorBoundaryClasses.container}>{renderErrorMessage(error)}</div>
+        <div className={errorBoundaryClasses.container}>
+          {renderErrorMessage(error, {
+            unexpected: t('errors.unexpectedTitle'),
+            unknown: t('errors.unknownTitle'),
+          })}
+        </div>
       </div>
     </>
   );
@@ -34,7 +42,7 @@ function parseStackTrace(stack?: string) {
   };
 }
 
-function renderErrorMessage(error: any) {
+function renderErrorMessage(error: any, labels: { unexpected: string; unknown: string }) {
   if (isRouteErrorResponse(error)) {
     return (
       <>
@@ -51,7 +59,7 @@ function renderErrorMessage(error: any) {
 
     return (
       <>
-        <h1 className={errorBoundaryClasses.title}>Unexpected Application Error!</h1>
+        <h1 className={errorBoundaryClasses.title}>{labels.unexpected}</h1>
         <p className={errorBoundaryClasses.message}>
           {error.name}: {error.message}
         </p>
@@ -65,7 +73,7 @@ function renderErrorMessage(error: any) {
     );
   }
 
-  return <h1 className={errorBoundaryClasses.title}>Unknown Error</h1>;
+  return <h1 className={errorBoundaryClasses.title}>{labels.unknown}</h1>;
 }
 
 // ----------------------------------------------------------------------

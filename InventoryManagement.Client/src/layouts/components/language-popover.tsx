@@ -1,6 +1,7 @@
+import type { LanguageValue } from 'src/locales';
 import type { IconButtonProps } from '@mui/material/IconButton';
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { usePopover } from 'minimal-shared/hooks';
 
 import Box from '@mui/material/Box';
@@ -9,12 +10,14 @@ import MenuList from '@mui/material/MenuList';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
+import { useTranslate } from 'src/locales';
+
 // ----------------------------------------------------------------------
 
 export type LanguagePopoverProps = IconButtonProps & {
   data?: {
     value: string;
-    label: string;
+    labelKey: string;
     icon: string;
   }[];
 };
@@ -22,22 +25,22 @@ export type LanguagePopoverProps = IconButtonProps & {
 export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProps) {
   const { open, anchorEl, onClose, onOpen } = usePopover();
 
-  const [locale, setLocale] = useState(data[0].value);
+  const { t, currentLanguage, onChangeLanguage } = useTranslate();
 
   const handleChangeLang = useCallback(
-    (newLang: string) => {
-      setLocale(newLang);
+    (newLang: LanguageValue) => {
+      onChangeLanguage(newLang);
       onClose();
     },
-    [onClose]
+    [onChangeLanguage, onClose]
   );
 
-  const currentLang = data.find((lang) => lang.value === locale);
+  const currentLang = data.find((lang) => lang.value === currentLanguage.value);
 
-  const renderFlag = (label?: string, icon?: string) => (
+  const renderFlag = (labelKey?: string, icon?: string) => (
     <Box
       component="img"
-      alt={label}
+      alt={labelKey ? t(labelKey) : ''}
       src={icon}
       sx={{ width: 26, height: 20, borderRadius: 0.5, objectFit: 'cover' }}
     />
@@ -74,10 +77,10 @@ export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProp
           <MenuItem
             key={option.value}
             selected={option.value === currentLang?.value}
-            onClick={() => handleChangeLang(option.value)}
+            onClick={() => handleChangeLang(option.value as LanguageValue)}
           >
-            {renderFlag(option.label, option.icon)}
-            {option.label}
+            {renderFlag(option.labelKey, option.icon)}
+            {t(option.labelKey)}
           </MenuItem>
         ))}
       </MenuList>
@@ -87,7 +90,7 @@ export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProp
   return (
     <>
       <IconButton
-        aria-label="Languages button"
+        aria-label={t('languages.selector')}
         onClick={onOpen}
         sx={[
           (theme) => ({
@@ -100,7 +103,7 @@ export function LanguagePopover({ data = [], sx, ...other }: LanguagePopoverProp
         ]}
         {...other}
       >
-        {renderFlag(currentLang?.label, currentLang?.icon)}
+        {renderFlag(currentLang?.labelKey, currentLang?.icon)}
       </IconButton>
 
       {renderMenuList()}

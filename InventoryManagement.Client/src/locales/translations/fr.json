@@ -1,0 +1,56 @@
+{
+  "app": {
+    "name": "Gestion des stocks",
+    "description": "Back-office de gestion des articles et des stocks"
+  },
+  "navigation": {
+    "dashboard": "Accueil",
+    "articles": "Articles"
+  },
+  "dashboard": {
+    "title": "Bienvenue dans la gestion des stocks",
+    "description": "Cette interface constitue le point d’entrée du back-office. La gestion des articles sera connectée à l’API au fur et à mesure de la disponibilité des endpoints.",
+    "openArticles": "Consulter les articles"
+  },
+  "articles": {
+    "title": "Articles",
+    "description": "La liste sera affichée ici lorsque l’endpoint de consultation sera disponible.",
+    "addArticle": "Ajouter un article",
+    "addArticleUnavailable": "Le formulaire d’ajout sera activé lors de son intégration à l’API.",
+    "reference": "Référence",
+    "name": "Nom",
+    "type": "Type",
+    "priceExcludingTax": "Prix HT",
+    "priceIncludingTax": "Prix TTC",
+    "vat": "TVA",
+    "stock": "Stock",
+    "status": "Statut",
+    "actions": "Actions",
+    "noData": "Aucun article à afficher",
+    "apiUnavailable": "L’API ne fournit pas encore d’endpoint documenté pour consulter les articles."
+  },
+  "apiAvailability": {
+    "title": "En attente de l’API",
+    "description": "Le serveur n’est pas encore disponible. Une nouvelle tentative est effectuée automatiquement toutes les 2 secondes."
+  },
+  "common": {
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "search": "Rechercher",
+    "noData": "Aucune donnée",
+    "backToHome": "Retour à l’accueil"
+  },
+  "errors": {
+    "notFoundTitle": "Page introuvable",
+    "notFoundDescription": "La page demandée n’existe pas ou a été déplacée.",
+    "unexpectedTitle": "Erreur inattendue de l’application",
+    "unknownTitle": "Erreur inconnue"
+  },
+  "languages": {
+    "selector": "Changer de langue",
+    "fr": "Français",
+    "en": "English"
+  }
+}
