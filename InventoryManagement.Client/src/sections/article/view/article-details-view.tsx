@@ -33,9 +33,9 @@ import InputAdornment from '@mui/material/InputAdornment';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useTranslate } from 'src/locales';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ApiError, recordSale, recordSupply, updateArticle, getArticleById, recordInventory, searchStockBuckets } from 'src/api';
+import { useTranslate, translateApiError } from 'src/locales';
+import { recordSale, recordSupply, updateArticle, getArticleById, recordInventory, searchStockBuckets } from 'src/api';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -105,7 +105,7 @@ export function ArticleDetailsView() {
     loadArticle(controller.signal)
       .catch((caughtError) => {
         if (caughtError instanceof DOMException && caughtError.name === 'AbortError') return;
-        setError(caughtError instanceof ApiError ? caughtError.message : t('common.error'));
+        setError(translateApiError(caughtError, t));
       });
     return () => controller.abort();
   }, [loadArticle, t]);
@@ -124,7 +124,7 @@ export function ArticleDetailsView() {
         .then(setInventorySearchOptions)
         .catch((caughtError) => {
           if (caughtError instanceof DOMException && caughtError.name === 'AbortError') return;
-          setInventoryError(caughtError instanceof ApiError ? caughtError.message : t('common.error'));
+          setInventoryError(translateApiError(caughtError, t));
         })
         .finally(() => {
           if (!controller.signal.aborted) setInventorySearchLoading(false);
@@ -180,7 +180,7 @@ export function ArticleDetailsView() {
         setNotification({ severity: 'error', message: t('supply.refreshError') });
       }
     } catch (caughtError) {
-      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      const message = translateApiError(caughtError, t);
       setSupplyError(message);
       setNotification({ severity: 'error', message });
     } finally {
@@ -297,7 +297,7 @@ export function ArticleDetailsView() {
         setNotification({ severity: 'error', message: t('inventory.refreshError') });
       }
     } catch (caughtError) {
-      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      const message = translateApiError(caughtError, t);
       setInventoryError(message);
       setNotification({ severity: 'error', message });
     } finally {
@@ -340,7 +340,7 @@ export function ArticleDetailsView() {
         setNotification({ severity: 'error', message: t('sale.refreshError') });
       }
     } catch (caughtError) {
-      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      const message = translateApiError(caughtError, t);
       setSaleError(message);
       setNotification({ severity: 'error', message });
     } finally {
@@ -395,7 +395,7 @@ export function ArticleDetailsView() {
         setNotification({ severity: 'error', message: t('articleEdit.refreshError') });
       }
     } catch (caughtError) {
-      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      const message = translateApiError(caughtError, t);
       setEditError(message);
       setNotification({ severity: 'error', message });
     } finally {

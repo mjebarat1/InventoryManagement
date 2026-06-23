@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Domain.Shared.Exceptions;
+using InventoryManagement.Domain.Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +24,10 @@ namespace InventoryManagement.Domain.Shared.ValueObjects
         public static VatRate FromDecimal(decimal value)
         {
             if (value < 0)
-                throw new BusinessRuleException("Le taux de TVA ne peut pas être négatif.");
+                throw new BusinessRuleException(DomainErrorCodes.VatRateMustBeNonNegative);
 
             if (value > 1)
-                throw new BusinessRuleException("Le taux de TVA doit être exprimé sous forme décimale, par exemple 0.20 pour 20%.");
+                throw new BusinessRuleException(DomainErrorCodes.VatRateInvalid);
 
             return new VatRate(value);
         }

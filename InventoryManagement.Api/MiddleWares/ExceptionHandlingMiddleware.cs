@@ -25,11 +25,7 @@ namespace InventoryManagement.Api.MiddleWares
             }
             catch (BusinessRuleException exception)
             {
-                await WriteProblemDetailsAsync(
-                    context,
-                    HttpStatusCode.BadRequest,
-                    "Business rule violation",
-                    exception.Message);
+                await WriteBusinessRuleProblemDetailsAsync(context, exception);
             }
             catch (Exception exception)
             {
@@ -41,6 +37,25 @@ namespace InventoryManagement.Api.MiddleWares
                     "Internal server error",
                     "An unexpected error occurred.");
             }
+        }
+
+        private static async Task WriteBusinessRuleProblemDetailsAsync(
+            HttpContext context,
+            BusinessRuleException exception)
+        {
+            context.Response.ContentType = "application/problem+json";
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            var response = new
+            {
+                type = "https://httpstatuses.com/400",
+                title = "Business rule violation",
+                status = StatusCodes.Status400BadRequest,
+                code = exception.Code,
+                parameters = exception.Parameters
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
 
         private static async Task WriteProblemDetailsAsync(

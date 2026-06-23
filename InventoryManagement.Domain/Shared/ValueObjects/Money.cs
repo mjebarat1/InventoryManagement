@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Domain.Shared.Exceptions;
+using InventoryManagement.Domain.Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace InventoryManagement.Domain.Shared.ValueObjects
         public static Money FromDecimal(decimal amount)
         {
             if (amount < 0)
-                throw new BusinessRuleException("Le montant ne peut pas être négatif.");
+                throw new BusinessRuleException(DomainErrorCodes.AmountMustBeNonNegative);
 
             return new Money(Math.Round(amount, 2));
         }

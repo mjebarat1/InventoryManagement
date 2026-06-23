@@ -9,7 +9,9 @@ export const API_BASE_URL = configuredBaseUrl.replace(/\/$/, '');
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
-    message: string
+    message: string,
+    public readonly code?: string,
+    public readonly parameters?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'ApiError';
@@ -30,8 +32,17 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   });
 
   if (!response.ok) {
-    const problem = await response.json().catch(() => null) as { detail?: string } | null;
-    throw new ApiError(response.status, problem?.detail || response.statusText || 'API request failed');
+    const problem = await response.json().catch(() => null) as {
+      detail?: string;
+      code?: string;
+      parameters?: Record<string, unknown>;
+    } | null;
+    throw new ApiError(
+      response.status,
+      problem?.detail || response.statusText || 'API request failed',
+      problem?.code,
+      problem?.parameters
+    );
   }
 
   if (response.status === 204) {

@@ -31,7 +31,6 @@ public sealed class RecordSaleUseCase : IRecordSaleUseCase
         RecordSaleCommand command,
         CancellationToken cancellationToken = default)
     {
-
         var snapshot = await _articleStockReadRepository.GetByArticleIdAsync(command.ArticleId, cancellationToken);
         if (snapshot is null)
             return null;
@@ -39,26 +38,25 @@ public sealed class RecordSaleUseCase : IRecordSaleUseCase
         snapshot.Article.EnsureActive();
 
         var quantity = Quantity.CreatePositive(command.Quantity);
-
         var (vatRate, priceIncludingTax, persistedSaleMode) = GetPricing(snapshot.Article, command.SaleMode);
-        
+
         var quantitiesByBucket = snapshot.Movements
             .SelectMany(movement => movement.Lines)
             .GroupBy(line => line.StockBucketId)
             .ToDictionary(group => group.Key, group => group.Sum(line => line.QuantityDelta));
-        
+
         var availabilities = snapshot.Buckets
             .Select(bucket => new StockBucketAvailability(
                 bucket,
                 Quantity.Create(Math.Max(0, quantitiesByBucket.GetValueOrDefault(bucket.Id)))))
             .ToArray();
-        
+
         var consumptions = _allocator.Allocate(
             snapshot.Article,
             availabilities,
             quantity,
             DateOnly.FromDateTime(_clock.Today));
-        
+
         var movement = SaleMovement.Create(
             snapshot.Article.Id,
             snapshot.Article.PriceExcludingTax,
@@ -81,7 +79,7 @@ public sealed class RecordSaleUseCase : IRecordSaleUseCase
         if (article is FoodArticle)
         {
             if (saleMode is null)
-                throw new BusinessRuleException("Le mode de vente est obligatoire pour un article alimentaire.");
+                throw new BusinessRuleException(DomainErrorCodes.SaleModeRequired);
 
             var foodVatRate = article.GetVatRate(saleMode.Value);
             return (foodVatRate, article.PriceExcludingTax.AddVat(foodVatRate), saleMode);
@@ -90,12 +88,12 @@ public sealed class RecordSaleUseCase : IRecordSaleUseCase
         if (article is NonFoodArticle)
         {
             if (saleMode is not null)
-                throw new BusinessRuleException("Le mode de vente ne doit pas être renseigné pour un article non alimentaire.");
+                throw new BusinessRuleException(DomainErrorCodes.SaleModeForbidden);
 
             var nonFoodVatRate = VatRate.NonFood();
             return (nonFoodVatRate, article.PriceExcludingTax.AddVat(nonFoodVatRate), null);
         }
 
-        throw new BusinessRuleException("Type d'article inconnu.");
+        throw new BusinessRuleException(DomainErrorCodes.ArticleTypeUnknown);
     }
 }

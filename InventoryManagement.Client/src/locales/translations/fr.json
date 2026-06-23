@@ -166,7 +166,67 @@
     "notFoundTitle": "Page introuvable",
     "notFoundDescription": "La page demandée n’existe pas ou a été déplacée.",
     "unexpectedTitle": "Erreur inattendue de l’application",
-    "unknownTitle": "Erreur inconnue"
+    "unknownTitle": "Erreur inconnue",
+    "article": {
+      "required": "L’article est obligatoire.",
+      "inactive": "Cet article est désactivé.",
+      "type": { "unknown": "Le type d’article est inconnu." },
+      "name": { "required": "Le nom de l’article est obligatoire." },
+      "reference": {
+        "required": "La référence EAN-13 est obligatoire.",
+        "invalid": "La référence doit contenir exactement 13 chiffres.",
+        "already_exists": "Un article avec la référence {{reference}} existe déjà."
+      },
+      "sale_modes": {
+        "required": "Au moins un mode de vente est obligatoire pour un article alimentaire.",
+        "forbidden": "Les modes de vente ne doivent pas être renseignés pour un article non alimentaire."
+      }
+    },
+    "pagination": {
+      "page_number": { "invalid": "Le numéro de page doit être supérieur ou égal à {{minimumPageNumber}}." },
+      "page_size": { "invalid": "La taille de page doit être comprise entre {{minimumPageSize}} et {{maximumPageSize}}." }
+    },
+    "stock_bucket": {
+      "reference": {
+        "invalid": "La référence du lot doit respecter le format ref-lot- suivi de 13 chiffres.",
+        "already_exists": "La référence de lot {{reference}} existe déjà."
+      },
+      "search": { "invalid": "Saisissez entre {{minimumDigits}} et {{maximumDigits}} chiffres pour rechercher une référence de lot." },
+      "expiration_date": {
+        "required_for_food": "La DLC est obligatoire pour un lot alimentaire.",
+        "forbidden_for_non_food": "La DLC ne doit pas être renseignée pour un lot non alimentaire."
+      },
+      "packaging": {
+        "forbidden_for_food": "Le packaging ne doit pas être renseigné pour un lot alimentaire.",
+        "required_for_non_food": "Le packaging est obligatoire pour un lot non alimentaire."
+      }
+    },
+    "quantity": {
+      "must_be_non_negative": "La quantité doit être supérieure ou égale à zéro.",
+      "must_be_positive": "La quantité doit être strictement positive."
+    },
+    "amount": { "must_be_non_negative": "Le montant ne peut pas être négatif." },
+    "vat_rate": {
+      "must_be_non_negative": "Le taux de TVA ne peut pas être négatif.",
+      "invalid": "Le taux de TVA doit être compris entre 0 et 1."
+    },
+    "stock": { "insufficient": "Stock insuffisant. Quantité demandée : {{requestedQuantity}}, quantité disponible : {{availableQuantity}}." },
+    "sale_mode": {
+      "not_allowed": "Ce mode de vente n’est pas autorisé pour cet article.",
+      "unknown": "Le mode de vente est inconnu.",
+      "required": "Le mode de vente est obligatoire pour un article alimentaire.",
+      "forbidden": "Le mode de vente ne doit pas être renseigné pour un article non alimentaire."
+    },
+    "inventory": {
+      "adjustment": { "required": "Au moins un écart d’inventaire est obligatoire." },
+      "no_difference": "Aucun écart d’inventaire n’a été constaté.",
+      "existing_buckets": { "required": "La liste des lots existants est obligatoire." },
+      "new_buckets": { "required": "La liste des nouveaux lots est obligatoire." },
+      "selection": { "required": "Sélectionnez au moins un lot à inventorier." },
+      "existing_bucket": { "duplicate": "Un lot existant ne peut être inventorié qu’une seule fois." },
+      "bucket": { "not_in_article": "Le lot sélectionné n’appartient pas à cet article." },
+      "new_reference": { "duplicate": "Une référence de nouveau lot ne peut être ajoutée qu’une seule fois." }
+    }
   },
   "languages": {
     "selector": "Changer de langue",

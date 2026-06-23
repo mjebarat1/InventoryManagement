@@ -169,6 +169,10 @@ Ne pas exposer directement les entités du domaine si le projet utilise déjà d
 
 ---
 
+Les erreurs métier suivent également cette séparation : le domaine et l'application lèvent une `BusinessRuleException` contenant un code stable et des paramètres structurés. L'adapter HTTP sérialise ce contrat, tandis que le client est responsable de sa traduction. Le domaine reste ainsi indépendant de la langue et de l'interface utilisateur.
+
+---
+
 ## Arbitrages
 
 En cas d’arbitrage entre plusieurs solutions valables, ne pas décider silencieusement.

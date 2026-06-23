@@ -17,9 +17,9 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-import { useTranslate } from 'src/locales';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ApiError, createFoodArticle, createNonFoodArticle } from 'src/api';
+import { useTranslate, translateApiError } from 'src/locales';
+import { createFoodArticle, createNonFoodArticle } from 'src/api';
 
 export function ArticleCreateView() {
   const { t } = useTranslate();
@@ -68,7 +68,7 @@ export function ArticleCreateView() {
         : await createNonFoodArticle(common);
       navigate(`/articles/${created.id}`, { state: { articleCreated: true } });
     } catch (caughtError) {
-      setError(caughtError instanceof ApiError ? caughtError.message : t('common.error'));
+      setError(translateApiError(caughtError, t));
     } finally {
       setSubmitting(false);
     }

@@ -36,17 +36,17 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
         snapshot.Article.EnsureActive();
 
         var existingCommands = command.ExistingBuckets
-            ?? throw new BusinessRuleException("La liste des lots existants est obligatoire.");
+            ?? throw new BusinessRuleException(DomainErrorCodes.InventoryExistingBucketsRequired);
         var newCommands = command.NewBuckets
-            ?? throw new BusinessRuleException("La liste des nouveaux lots est obligatoire.");
+            ?? throw new BusinessRuleException(DomainErrorCodes.InventoryNewBucketsRequired);
         if (existingCommands.Count == 0 && newCommands.Count == 0)
-            throw new BusinessRuleException("Sélectionnez au moins un lot à inventorier.");
+            throw new BusinessRuleException(DomainErrorCodes.InventorySelectionRequired);
 
         var duplicateExistingBucket = existingCommands
             .GroupBy(item => item.StockBucketId)
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicateExistingBucket is not null)
-            throw new BusinessRuleException("Un lot existant ne peut être inventorié qu'une seule fois.");
+            throw new BusinessRuleException(DomainErrorCodes.InventoryDuplicateExistingBucket);
 
         var bucketsById = snapshot.Buckets.ToDictionary(bucket => bucket.Id);
         var quantitiesByBucket = snapshot.Movements
@@ -58,7 +58,7 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
         foreach (var item in existingCommands)
         {
             if (!bucketsById.TryGetValue(item.StockBucketId, out var bucket))
-                throw new BusinessRuleException("Un lot sélectionné n'appartient pas à cet article.");
+                throw new BusinessRuleException(DomainErrorCodes.InventoryBucketNotInArticle);
 
             var currentQuantity = Quantity.Create(quantitiesByBucket.GetValueOrDefault(bucket.Id));
             var countedQuantity = Quantity.Create(item.CountedQuantity);
@@ -72,17 +72,18 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
         {
             var reference = StockBucketReference.Create(item.Reference);
             if (!newReferences.Add(reference.Value))
-                throw new BusinessRuleException("Une référence de nouveau lot ne peut être ajoutée qu'une seule fois.");
+                throw new BusinessRuleException(DomainErrorCodes.InventoryDuplicateNewReference);
             if (await _stockBucketRepository.ExistsByReferenceAsync(reference, cancellationToken))
-                throw new BusinessRuleException($"La référence de lot {reference.Value} existe déjà.");
+            {
+                throw new BusinessRuleException(
+                    DomainErrorCodes.StockBucketReferenceAlreadyExists,
+                    new Dictionary<string, object?> { ["reference"] = reference.Value });
+            }
 
             var countedQuantity = Quantity.CreatePositive(item.CountedQuantity);
             var bucket = CreateNewBucket(snapshot.Article, reference, item);
             newBuckets.Add(bucket);
-            adjustments.Add(new StockInventoryAdjustment(
-                bucket.Id,
-                Quantity.Create(0),
-                countedQuantity));
+            adjustments.Add(new StockInventoryAdjustment(bucket.Id, Quantity.Create(0), countedQuantity));
         }
 
         var movement = InventoryMovement.Create(snapshot.Article.Id, command.Comment, adjustments);
@@ -101,7 +102,7 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
     {
         FoodArticle => CreateFoodBucket(article.Id, reference, command),
         NonFoodArticle => CreateNonFoodBucket(article.Id, reference, command),
-        _ => throw new BusinessRuleException("Type d'article inconnu.")
+        _ => throw new BusinessRuleException(DomainErrorCodes.ArticleTypeUnknown)
     };
 
     private static FoodStockBucket CreateFoodBucket(
@@ -110,9 +111,9 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
         RecordInventoryNewBucketCommand command)
     {
         if (command.ExpirationDate is null)
-            throw new BusinessRuleException("La DLC est obligatoire pour un nouveau lot alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketExpirationRequiredForFood);
         if (command.PackagingLevel is not null)
-            throw new BusinessRuleException("Le packaging ne doit pas être renseigné pour un nouveau lot alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketPackagingForbiddenForFood);
 
         return FoodStockBucket.Create(articleId, reference, command.ExpirationDate.Value);
     }
@@ -123,9 +124,9 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
         RecordInventoryNewBucketCommand command)
     {
         if (command.PackagingLevel is null)
-            throw new BusinessRuleException("Le packaging est obligatoire pour un nouveau lot non alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketPackagingRequiredForNonFood);
         if (command.ExpirationDate is not null)
-            throw new BusinessRuleException("La DLC ne doit pas être renseignée pour un nouveau lot non alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketExpirationForbiddenForNonFood);
 
         return NonFoodStockBucket.Create(articleId, reference, command.PackagingLevel.Value);
     }

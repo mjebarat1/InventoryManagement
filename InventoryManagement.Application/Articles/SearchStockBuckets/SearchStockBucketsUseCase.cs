@@ -23,9 +23,18 @@ public sealed partial class SearchStockBucketsUseCase : ISearchStockBucketsUseCa
         CancellationToken cancellationToken = default)
     {
         if (query.ArticleId == Guid.Empty)
-            throw new BusinessRuleException("L'article est obligatoire.");
+            throw new BusinessRuleException(DomainErrorCodes.ArticleRequired);
+
         if (!ReferenceDigitsPattern().IsMatch(query.ReferenceDigits ?? string.Empty))
-            throw new BusinessRuleException("Saisissez entre 9 et 13 chiffres pour rechercher une référence de lot.");
+        {
+            throw new BusinessRuleException(
+                DomainErrorCodes.StockBucketSearchInvalid,
+                new Dictionary<string, object?>
+                {
+                    ["minimumDigits"] = 9,
+                    ["maximumDigits"] = 13
+                });
+        }
 
         var snapshots = await _stockBucketRepository.SearchByReferencePrefixAsync(
             query.ArticleId,

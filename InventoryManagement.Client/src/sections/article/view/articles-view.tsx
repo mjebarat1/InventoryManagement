@@ -29,9 +29,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useTranslate } from 'src/locales';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ApiError, searchArticles, deactivateArticle } from 'src/api';
+import { searchArticles, deactivateArticle } from 'src/api';
+import { useTranslate, translateApiError } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -75,7 +75,7 @@ export function ArticlesView() {
       })
       .catch((caughtError) => {
         if (caughtError instanceof DOMException && caughtError.name === 'AbortError') return;
-        setError(caughtError instanceof ApiError ? caughtError.message : t('common.error'));
+        setError(translateApiError(caughtError, t));
       })
       .finally(() => setLoading(false));
   }, [appliedFilters, page, pageSize, sortBy, sortDirection, t]);
@@ -112,7 +112,7 @@ export function ArticlesView() {
     } catch (caughtError) {
       setNotification({
         severity: 'error',
-        message: caughtError instanceof ApiError ? caughtError.message : t('common.error'),
+        message: translateApiError(caughtError, t),
       });
     } finally {
       setDeactivating(false);

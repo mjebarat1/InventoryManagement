@@ -122,6 +122,10 @@ Conserver les détails utiles pour le debug en développement si nécessaire.
 
 ---
 
+Pour une erreur métier HTTP 400, `ApiError` expose `code` et `parameters`. Les composants passent l'erreur à `translateApiError`, qui résout la clé `errors.<code>` dans les ressources i18n FR/EN et interpole les paramètres. Un code inconnu utilise le message générique traduit ; aucun texte utilisateur n'est fourni par le domaine.
+
+---
+
 ## Synchronisation avec le backend
 
 Quand un endpoint change, mettre à jour :

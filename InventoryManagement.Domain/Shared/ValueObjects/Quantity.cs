@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Domain.Shared.Exceptions;
+using InventoryManagement.Domain.Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace InventoryManagement.Domain.Shared.ValueObjects
         public static Quantity Create(int value)
         {
             if (value < 0)
-                throw new BusinessRuleException("La quantité ne peut pas être négative.");
+                throw new BusinessRuleException(DomainErrorCodes.QuantityMustBeNonNegative);
 
             return new Quantity(value);
         }
@@ -27,7 +27,7 @@ namespace InventoryManagement.Domain.Shared.ValueObjects
         public static Quantity CreatePositive(int value)
         {
             if (value <= 0)
-                throw new BusinessRuleException("La quantité doit être strictement positive.");
+                throw new BusinessRuleException(DomainErrorCodes.QuantityMustBePositive);
 
             return new Quantity(value);
         }
@@ -40,7 +40,13 @@ namespace InventoryManagement.Domain.Shared.ValueObjects
         public static Quantity operator -(Quantity left, Quantity right)
         {
             if (right.Value > left.Value)
-                throw new BusinessRuleException("Stock insuffisant.");
+                throw new BusinessRuleException(
+                    DomainErrorCodes.StockInsufficient,
+                    new Dictionary<string, object?>
+                    {
+                        ["requestedQuantity"] = right.Value,
+                        ["availableQuantity"] = left.Value
+                    });
 
             return new Quantity(left.Value - right.Value);
         }

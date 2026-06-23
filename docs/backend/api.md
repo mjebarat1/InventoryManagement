@@ -233,6 +233,27 @@ Cet endpoint est technique. Il n'appelle aucun cas d'usage métier et n'accède 
 
 ---
 
+## Erreurs métier
+
+Le domaine et l'application exposent des codes stables via `BusinessRuleException`; ils ne produisent pas de texte destiné à l'utilisateur. Le middleware traduit ces exceptions en réponse HTTP `400 application/problem+json` :
+
+```json
+{
+  "type": "https://httpstatuses.com/400",
+  "title": "Business rule violation",
+  "status": 400,
+  "code": "stock.insufficient",
+  "parameters": {
+    "requestedQuantity": 10,
+    "availableQuantity": 6
+  }
+}
+```
+
+`code` constitue le contrat stable consommé par le client. `parameters` contient uniquement les valeurs nécessaires à l'interpolation du message traduit. Les erreurs techniques conservent le traitement générique existant.
+
+---
+
 ## CORS
 
 La policy `ClientCors` autorise les origines déclarées dans `Cors:AllowedOrigins`.

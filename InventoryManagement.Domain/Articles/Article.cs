@@ -1,10 +1,5 @@
-﻿using InventoryManagement.Domain.Shared.Exceptions;
+using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryManagement.Domain.Articles
 {
@@ -23,13 +18,10 @@ namespace InventoryManagement.Domain.Articles
             // EF Core
         }
 
-        protected Article(
-            Ean13Reference reference,
-            string name,
-            Money priceExcludingTax)
+        protected Article(Ean13Reference reference, string name, Money priceExcludingTax)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new BusinessRuleException("Le nom de l'article est obligatoire.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleNameRequired);
 
             Id = Guid.NewGuid();
             Reference = reference;
@@ -49,7 +41,7 @@ namespace InventoryManagement.Domain.Articles
         public void EnsureActive()
         {
             if (!IsActive)
-                throw new BusinessRuleException("Cet article est désactivé.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleInactive);
         }
 
         public void Deactivate()
@@ -62,11 +54,10 @@ namespace InventoryManagement.Domain.Articles
         {
             EnsureActive();
             if (string.IsNullOrWhiteSpace(name))
-                throw new BusinessRuleException("Le nom de l'article est obligatoire.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleNameRequired);
 
             Name = name.Trim();
             PriceExcludingTax = priceExcludingTax;
         }
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Domain.Articles;
+using InventoryManagement.Domain.Articles;
 using InventoryManagement.Domain.Shared;
 using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
@@ -31,7 +31,7 @@ namespace InventoryManagement.Domain.StockMovement
         protected StockMovement(Guid articleId)
         {
             if (articleId == Guid.Empty)
-                throw new BusinessRuleException("L'article est obligatoire.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleRequired);
 
             Id = Guid.NewGuid();
             ArticleId = articleId;

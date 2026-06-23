@@ -953,6 +953,8 @@ Le scénario d'inventaire et la référence métier des lots ont été assistés
 
 Le CRUD Article a été assisté pour la recherche unifiée, les invariants de modification et la désactivation logique. Le choix de conserver l'historique plutôt que d'effectuer une suppression physique a été validé humainement après analyse des relations EF.
 
+La gestion bilingue des erreurs métier a été assistée pour l'inventaire des exceptions, la définition des codes stables, le contrat HTTP, l'intégration i18n et les tests de contrat. Le découpage entre codes backend et textes frontend a été relu et validé humainement.
+
 Le code final a été relu, adapté et organisé manuellement.
 
 Les choix d’architecture, les arbitrages métier, les contrats API et les limites fonctionnelles ont été validés humainement avant intégration.

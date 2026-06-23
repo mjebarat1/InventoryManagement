@@ -58,7 +58,9 @@ public sealed class RecordSaleUseCaseTests
         var exception = await Assert.ThrowsAsync<BusinessRuleException>(() =>
             useCase.ExecuteAsync(new RecordSaleCommand(article.Id, 4, SaleMode.TakeAway)));
 
-        Assert.Equal("Stock vendable insuffisant. Disponible : 3, demandé : 4.", exception.Message);
+        Assert.Equal(DomainErrorCodes.StockInsufficient, exception.Code);
+        Assert.Equal(4, exception.Parameters["requestedQuantity"]);
+        Assert.Equal(3, exception.Parameters["availableQuantity"]);
         Assert.Null(repository.Sale);
     }
 

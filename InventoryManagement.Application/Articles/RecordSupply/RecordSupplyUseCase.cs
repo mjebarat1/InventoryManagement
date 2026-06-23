@@ -36,14 +36,18 @@ public sealed class RecordSupplyUseCase : IRecordSupplyUseCase
 
         var reference = StockBucketReference.Create(command.StockBucketReference);
         if (await _stockBucketRepository.ExistsByReferenceAsync(reference, cancellationToken))
-            throw new BusinessRuleException("Cette référence de lot existe déjà.");
+        {
+            throw new BusinessRuleException(
+                DomainErrorCodes.StockBucketReferenceAlreadyExists,
+                new Dictionary<string, object?> { ["reference"] = reference.Value });
+        }
 
         var quantity = Quantity.CreatePositive(command.Quantity);
         StockBucket bucket = article switch
         {
             FoodArticle => CreateFoodBucket(article.Id, reference, command),
             NonFoodArticle => CreateNonFoodBucket(article.Id, reference, command),
-            _ => throw new BusinessRuleException("Type d'article inconnu.")
+            _ => throw new BusinessRuleException(DomainErrorCodes.ArticleTypeUnknown)
         };
 
         var movement = SupplyMovement.Create(article.Id, bucket.Id, quantity);
@@ -58,9 +62,9 @@ public sealed class RecordSupplyUseCase : IRecordSupplyUseCase
         RecordSupplyCommand command)
     {
         if (command.ExpirationDate is null)
-            throw new BusinessRuleException("La DLC est obligatoire pour un approvisionnement alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketExpirationRequiredForFood);
         if (command.PackagingLevel is not null)
-            throw new BusinessRuleException("Le packaging ne doit pas être renseigné pour un article alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketPackagingForbiddenForFood);
 
         return FoodStockBucket.Create(articleId, reference, command.ExpirationDate.Value);
     }
@@ -71,9 +75,9 @@ public sealed class RecordSupplyUseCase : IRecordSupplyUseCase
         RecordSupplyCommand command)
     {
         if (command.PackagingLevel is null)
-            throw new BusinessRuleException("Le packaging est obligatoire pour un approvisionnement non alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketPackagingRequiredForNonFood);
         if (command.ExpirationDate is not null)
-            throw new BusinessRuleException("La DLC ne doit pas être renseignée pour un article non alimentaire.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketExpirationForbiddenForNonFood);
 
         return NonFoodStockBucket.Create(articleId, reference, command.PackagingLevel.Value);
     }

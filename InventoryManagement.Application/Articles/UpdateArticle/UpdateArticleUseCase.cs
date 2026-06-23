@@ -28,16 +28,16 @@ public sealed class UpdateArticleUseCase : IUpdateArticleUseCase
         {
             case FoodArticle foodArticle:
                 if (command.AllowedSaleModes is null)
-                    throw new BusinessRuleException("Les modes de vente sont obligatoires pour un article alimentaire.");
+                    throw new BusinessRuleException(DomainErrorCodes.ArticleSaleModesRequired);
                 foodArticle.Update(command.Name, price, command.AllowedSaleModes);
                 break;
             case NonFoodArticle nonFoodArticle:
                 if (command.AllowedSaleModes is { Count: > 0 })
-                    throw new BusinessRuleException("Les modes de vente ne doivent pas être renseignés pour un article non alimentaire.");
+                    throw new BusinessRuleException(DomainErrorCodes.ArticleSaleModesForbidden);
                 nonFoodArticle.Update(command.Name, price);
                 break;
             default:
-                throw new BusinessRuleException("Type d'article inconnu.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleTypeUnknown);
         }
 
         await _articleRepository.UpdateAsync(article, cancellationToken);

@@ -13,7 +13,7 @@ public sealed partial class StockBucketReference : IEquatable<StockBucketReferen
     {
         var normalizedValue = value?.Trim() ?? string.Empty;
         if (!ReferencePattern().IsMatch(normalizedValue))
-            throw new BusinessRuleException("La référence du lot doit respecter le format ref-lot- suivi de 13 chiffres.");
+            throw new BusinessRuleException(DomainErrorCodes.StockBucketReferenceInvalid);
 
         return new StockBucketReference(normalizedValue);
     }

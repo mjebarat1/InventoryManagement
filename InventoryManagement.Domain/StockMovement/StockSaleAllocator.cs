@@ -22,7 +22,12 @@ public sealed class StockSaleAllocator
         if (availableQuantity < requestedQuantity.Value)
         {
             throw new BusinessRuleException(
-                $"Stock vendable insuffisant. Disponible : {availableQuantity}, demandé : {requestedQuantity.Value}.");
+                DomainErrorCodes.StockInsufficient,
+                new Dictionary<string, object?>
+                {
+                    ["requestedQuantity"] = requestedQuantity.Value,
+                    ["availableQuantity"] = availableQuantity
+                });
         }
 
         var remaining = requestedQuantity.Value;
@@ -58,7 +63,7 @@ public sealed class StockSaleAllocator
             NonFoodArticle => availabilities
                 .Where(item => item.Bucket is NonFoodStockBucket && item.Bucket.IsSellable(today))
                 .OrderBy(item => item.Bucket.CreatedAt),
-            _ => throw new BusinessRuleException("Type d'article inconnu.")
+            _ => throw new BusinessRuleException(DomainErrorCodes.ArticleTypeUnknown)
         };
     }
 }

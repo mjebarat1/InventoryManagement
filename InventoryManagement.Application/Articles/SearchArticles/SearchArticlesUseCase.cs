@@ -17,9 +17,22 @@ public sealed class SearchArticlesUseCase : ISearchArticlesUseCase
         CancellationToken cancellationToken = default)
     {
         if (query.PageNumber < 1)
-            throw new BusinessRuleException("Le numéro de page doit être supérieur ou égal à 1.");
+        {
+            throw new BusinessRuleException(
+                DomainErrorCodes.PaginationPageNumberInvalid,
+                new Dictionary<string, object?> { ["minimumPageNumber"] = 1 });
+        }
+
         if (query.PageSize is < 1 or > MaximumPageSize)
-            throw new BusinessRuleException($"La taille de page doit être comprise entre 1 et {MaximumPageSize}.");
+        {
+            throw new BusinessRuleException(
+                DomainErrorCodes.PaginationPageSizeInvalid,
+                new Dictionary<string, object?>
+                {
+                    ["minimumPageSize"] = 1,
+                    ["maximumPageSize"] = MaximumPageSize
+                });
+        }
 
         var page = await _articleRepository.SearchAsync(
             new ArticleSearchCriteria(query.PageNumber, query.PageSize, query.SortBy,

@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace InventoryManagement.Domain.Shared.Exceptions;
 
-namespace InventoryManagement.Domain.Shared.Exceptions
+public sealed class BusinessRuleException : Exception
 {
-    public  class BusinessRuleException : Exception
+    public BusinessRuleException(
+        string code,
+        IReadOnlyDictionary<string, object?>? parameters = null)
+        : base(code)
     {
-
-        public BusinessRuleException(string message) : base(message)
-        {
-        }
+        Code = code;
+        Parameters = parameters is null
+            ? new Dictionary<string, object?>()
+            : new Dictionary<string, object?>(parameters);
     }
+
+    public string Code { get; }
+    public IReadOnlyDictionary<string, object?> Parameters { get; }
 }

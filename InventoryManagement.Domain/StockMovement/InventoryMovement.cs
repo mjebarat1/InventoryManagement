@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Domain.Shared;
+using InventoryManagement.Domain.Shared;
 using InventoryManagement.Domain.Shared.ValueObjects;
 using InventoryManagement.Domain.Shared.Exceptions;
 using System;
@@ -30,7 +30,7 @@ namespace InventoryManagement.Domain.StockMovement
             IReadOnlyCollection<StockInventoryAdjustment> adjustments)
         {
             if (adjustments is null || adjustments.Count == 0)
-                throw new BusinessRuleException("Au moins un écart d'inventaire est obligatoire.");
+                throw new BusinessRuleException(DomainErrorCodes.InventoryAdjustmentRequired);
 
             var movement = new InventoryMovement(articleId, comment);
 
@@ -49,7 +49,7 @@ namespace InventoryManagement.Domain.StockMovement
             }
 
             if (movement.Lines.Count == 0)
-                throw new BusinessRuleException("Aucun écart d'inventaire n'a été constaté.");
+                throw new BusinessRuleException(DomainErrorCodes.InventoryNoDifference);
 
             return movement;
         }

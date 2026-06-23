@@ -23,7 +23,11 @@ public sealed class CreateNonFoodArticleUseCase : ICreateNonFoodArticleUseCase
         var reference = Ean13Reference.Create(command.Reference);
 
         if (await _articleRepository.ExistsByReferenceAsync(reference, cancellationToken))
-            throw new BusinessRuleException($"Un article avec la référence '{command.Reference}' existe déjà.");
+        {
+            throw new BusinessRuleException(
+                DomainErrorCodes.ArticleReferenceAlreadyExists,
+                new Dictionary<string, object?> { ["reference"] = command.Reference });
+        }
 
         var article = NonFoodArticle.Create(
             reference,

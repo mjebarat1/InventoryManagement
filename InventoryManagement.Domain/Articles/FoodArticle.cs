@@ -1,4 +1,4 @@
-﻿using InventoryManagement.Domain.Shared.Exceptions;
+using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -46,14 +46,14 @@ namespace InventoryManagement.Domain.Articles
         public override VatRate GetVatRate(SaleMode saleMode)
         {
             if (!CanBeSoldAs(saleMode))
-                throw new BusinessRuleException("Ce mode de vente n'est pas autorisé pour cet article.");
+                throw new BusinessRuleException(DomainErrorCodes.SaleModeNotAllowed);
             
 
             return saleMode switch
             {
                 SaleMode.TakeAway => VatRate.FoodTakeAway(),
                 SaleMode.OnSite => VatRate.FoodOnSite(),
-                _ => throw new BusinessRuleException("Mode de vente inconnu.")
+                _ => throw new BusinessRuleException(DomainErrorCodes.SaleModeUnknown)
             };
         }
 
@@ -76,7 +76,7 @@ namespace InventoryManagement.Domain.Articles
         {
             if (saleModes is null)
             {
-                throw new BusinessRuleException("Au moins un mode de vente est obligatoire.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleSaleModesRequired);
             }
 
             var distinctSaleModes = saleModes
@@ -85,7 +85,7 @@ namespace InventoryManagement.Domain.Articles
 
             if (distinctSaleModes.Count == 0)
             {
-                throw new BusinessRuleException("Au moins un mode de vente est obligatoire.");
+                throw new BusinessRuleException(DomainErrorCodes.ArticleSaleModesRequired);
             }
 
             _saleModes.RemoveAll(existing => !distinctSaleModes.Contains(existing.Value));
