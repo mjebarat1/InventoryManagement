@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  API_IMAGE_NAME: ghcr.io/jebaratm/inventorymanagement-api
-  CLIENT_IMAGE_NAME: ghcr.io/jebaratm/inventorymanagement-client
+  API_IMAGE_NAME: ghcr.io/mjebarat1/inventorymanagement-api
+  CLIENT_IMAGE_NAME: ghcr.io/mjebarat1/inventorymanagement-client
 
 jobs:
   build-test-and-push:
