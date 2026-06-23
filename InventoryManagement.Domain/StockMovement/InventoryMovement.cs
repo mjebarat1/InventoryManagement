@@ -1,4 +1,5 @@
-﻿using InventoryManagement.Domain.Shared.ValueObjects;
+﻿using InventoryManagement.Domain.Shared;
+using InventoryManagement.Domain.Shared.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,31 @@ namespace InventoryManagement.Domain.StockMovement
             // EF Core
         }
 
-        public InventoryMovement(Guid articleId, Quantity countedQuantity)
-            : base(articleId, countedQuantity)
+        private InventoryMovement(Guid articleId)
+            : base(articleId)
         {
-            // Ici Quantity = quantité réellement constatée.
         }
 
-        public override Quantity ApplyTo(Quantity currentStock)
+        public static InventoryMovement Create(Guid articleId, IReadOnlyCollection<StockInventoryAdjustment> adjustments)
         {
-            return Quantity;
+            var movement = new InventoryMovement(articleId);
+
+            foreach (var adjustment in adjustments)
+            {
+                if (adjustment.CurrentQuantity.Value == adjustment.CountedQuantity.Value)
+                {
+                    continue;
+                }
+
+                movement.AddLine(StockMovementLine.CreateInventoryAdjustmentLine(
+                    stockMovementId: movement.Id,
+                    stockBucketId: adjustment.StockBucketId,
+                    currentQuantity: adjustment.CurrentQuantity,
+                    countedQuantity: adjustment.CountedQuantity));
+            }
+
+            return movement;
         }
+
     }
 }

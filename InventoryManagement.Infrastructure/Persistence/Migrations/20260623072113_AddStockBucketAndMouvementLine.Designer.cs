@@ -3,6 +3,7 @@ using System;
 using InventoryManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryManagement.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(StockDbContext))]
-    partial class StockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623072113_AddStockBucketAndMouvementLine")]
+    partial class AddStockBucketAndMouvementLine
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.17");
@@ -42,7 +45,7 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("InventoryManagement.Domain.StockBucket.StockBucket", b =>
+            modelBuilder.Entity("InventoryManagement.Domain.Articles.StockBucket", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,23 +54,27 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ArticleId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BucketType")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("ExpirationDate")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("ExpirationDate");
+
+                    b.Property<string>("PackagingLevel")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("PackagingLevel");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ArticleId");
 
+                    b.HasIndex("ExpirationDate");
+
+                    b.HasIndex("PackagingLevel");
+
                     b.ToTable("StockBuckets", (string)null);
-
-                    b.HasDiscriminator<string>("BucketType").HasValue("StockBucket");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("InventoryManagement.Domain.StockMovement.StockMovement", b =>
@@ -138,28 +145,15 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("NonFood");
                 });
 
-            modelBuilder.Entity("InventoryManagement.Domain.StockBucket.FoodStockBucket", b =>
+            modelBuilder.Entity("InventoryManagement.Domain.StockMovement.FoodSupplyMovement", b =>
                 {
-                    b.HasBaseType("InventoryManagement.Domain.StockBucket.StockBucket");
+                    b.HasBaseType("InventoryManagement.Domain.StockMovement.StockMovement");
 
                     b.Property<DateOnly>("ExpirationDate")
                         .HasColumnType("TEXT")
                         .HasColumnName("ExpirationDate");
 
-                    b.HasDiscriminator().HasValue("Food");
-                });
-
-            modelBuilder.Entity("InventoryManagement.Domain.StockBucket.NonFoodStockBucket", b =>
-                {
-                    b.HasBaseType("InventoryManagement.Domain.StockBucket.StockBucket");
-
-                    b.Property<string>("PackagingLevel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("PackagingLevel");
-
-                    b.HasDiscriminator().HasValue("NonFood");
+                    b.HasDiscriminator().HasValue("FoodSupply");
                 });
 
             modelBuilder.Entity("InventoryManagement.Domain.StockMovement.InventoryMovement", b =>
@@ -169,18 +163,24 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("Inventory");
                 });
 
+            modelBuilder.Entity("InventoryManagement.Domain.StockMovement.NonFoodSupplyMovement", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Domain.StockMovement.StockMovement");
+
+                    b.Property<string>("PackagingLevel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("PackagingLevel");
+
+                    b.HasDiscriminator().HasValue("NonFoodSupply");
+                });
+
             modelBuilder.Entity("InventoryManagement.Domain.StockMovement.SaleMovement", b =>
                 {
                     b.HasBaseType("InventoryManagement.Domain.StockMovement.StockMovement");
 
                     b.HasDiscriminator().HasValue("Sale");
-                });
-
-            modelBuilder.Entity("InventoryManagement.Domain.StockMovement.SupplyMovement", b =>
-                {
-                    b.HasBaseType("InventoryManagement.Domain.StockMovement.StockMovement");
-
-                    b.HasDiscriminator().HasValue("Supply");
                 });
 
             modelBuilder.Entity("InventoryManagement.Domain.Articles.Article", b =>
@@ -232,7 +232,7 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("InventoryManagement.Domain.StockBucket.StockBucket", b =>
+            modelBuilder.Entity("InventoryManagement.Domain.Articles.StockBucket", b =>
                 {
                     b.HasOne("InventoryManagement.Domain.Articles.Article", "Article")
                         .WithMany()
@@ -256,7 +256,7 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("InventoryManagement.Domain.StockMovement.StockMovementLine", b =>
                 {
-                    b.HasOne("InventoryManagement.Domain.StockBucket.StockBucket", "StockBucket")
+                    b.HasOne("InventoryManagement.Domain.Articles.StockBucket", "StockBucket")
                         .WithMany()
                         .HasForeignKey("StockBucketId")
                         .OnDelete(DeleteBehavior.Restrict)

@@ -67,5 +67,7 @@ namespace InventoryManagement.Domain.Shared.ValueObjects
         {
             return Value.ToString();
         }
+
+
     }
 }

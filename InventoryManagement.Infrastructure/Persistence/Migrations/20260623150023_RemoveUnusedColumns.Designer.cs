@@ -3,6 +3,7 @@ using System;
 using InventoryManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryManagement.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(StockDbContext))]
-    partial class StockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623150023_RemoveUnusedColumns")]
+    partial class RemoveUnusedColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.17");
@@ -179,6 +182,9 @@ namespace InventoryManagement.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("InventoryManagement.Domain.StockMovement.SupplyMovement", b =>
                 {
                     b.HasBaseType("InventoryManagement.Domain.StockMovement.StockMovement");
+
+                    b.Property<int>("PackagingLevel")
+                        .HasColumnType("INTEGER");
 
                     b.HasDiscriminator().HasValue("Supply");
                 });

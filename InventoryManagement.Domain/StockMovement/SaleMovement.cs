@@ -1,4 +1,5 @@
-﻿using InventoryManagement.Domain.Shared.Exceptions;
+﻿using InventoryManagement.Domain.Shared;
+using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -19,17 +20,49 @@ namespace InventoryManagement.Domain.StockMovement
             // EF Core
         }
 
-        public SaleMovement(Guid articleId, Quantity quantity, Money unitPriceExcludingTax, Money unitPriceIncludingTax, VatRate VatRate)
-            : base(articleId, quantity)
+        private SaleMovement(Guid articleId,Money unitPriceExcludingTax, Money unitPriceIncludingTax, VatRate VatRate)
+            : base(articleId)
         {
             UnitPriceExcludingTax = unitPriceExcludingTax;
             UnitPriceIncludingTax = unitPriceIncludingTax;
             this.VatRate = VatRate;
         }
 
-        public override Quantity ApplyTo(Quantity currentStock)
+
+        public static SaleMovement Create(
+            Guid articleId,
+            Guid stockBucketId,
+            Money unitPriceExcludingTax,
+            Money unitPriceIncludingTax,
+            VatRate vatRate,
+            IReadOnlyCollection<StockConsumption> consumptions)
         {
-            return currentStock - Quantity;
+            var movement = new SaleMovement(articleId, unitPriceExcludingTax, unitPriceIncludingTax, vatRate);
+
+            foreach (var consumption in consumptions)
+            {
+                movement.AddLine(StockMovementLine.CreateConsumptionLine(
+                    stockMovementId: movement.Id,
+                    stockBucketId: consumption.StockBucketId,
+                    currentQuantity: consumption.CurrentQuantity,
+                    consumedQuantity: consumption.ConsumedQuantity));
+            }
+
+            return movement;
+        }
+
+        public void ConsumeBucket(
+            Guid stockBucketId,
+            Quantity currentQuantity,
+            Quantity consumedQuantity)
+        {
+            var quantityAfter = currentQuantity - consumedQuantity;
+
+            AddLine(StockMovementLine.CreateConsumptionLine(
+                stockMovementId: Id,
+                stockBucketId: stockBucketId,
+                currentQuantity: currentQuantity,
+                consumedQuantity: consumedQuantity));
         }
     }
 }

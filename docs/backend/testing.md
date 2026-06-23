@@ -25,8 +25,8 @@ Exemples :
 
 - une référence EAN-13 invalide est refusée ;
 - un prix HT négatif est refusé ;
-- un article alimentaire doit avoir une DLC ;
-- un article non alimentaire doit avoir un packaging ;
+- un bucket alimentaire doit avoir une DLC ;
+- un bucket non alimentaire doit avoir un packaging ;
 - le taux de TVA est correct selon le type d’article ;
 - le stock vendable exclut les articles invendables.
 
@@ -43,6 +43,8 @@ Exemples :
 - saisie d’un approvisionnement ;
 - saisie d’un inventaire ;
 - calcul du stock après mouvements.
+- calcul du stock par somme des `QuantityDelta` ;
+- calcul du stock vendable selon la DLC ou le packaging du bucket ;
 
 Les dépendances externes doivent être remplacées par des fakes ou mocks si nécessaire.
 

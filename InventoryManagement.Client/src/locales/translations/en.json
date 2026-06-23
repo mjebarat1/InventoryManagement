@@ -47,12 +47,17 @@
   "articleDetails": {
     "title": "Article details", "notFound": "Article not found.", "backToList": "Back to articles",
     "totalStock": "Total stock", "sellableStock": "Sellable stock", "nonSellableStock": "Non-sellable stock",
+    "stockBuckets": "Stock lots", "noBuckets": "No stock lot for this article.",
+    "physicalQuantity": "Physical quantity", "sellableQuantity": "Sellable quantity", "status": "Status",
     "movements": "Stock movements", "date": "Date", "movementType": "Movement type",
-    "quantity": "Quantity", "expirationDate": "Expiration date", "packaging": "Packaging", "comment": "Comment",
+    "quantity": "Quantity", "quantityDelta": "Change", "expirationDate": "Expiration date", "packaging": "Packaging",
+    "impactedBuckets": "Impacted lots", "bucket": "Lot", "quantityBefore": "Quantity before", "quantityAfter": "Quantity after",
+    "toggleMovementLines": "Show or hide movement lines",
     "noMovements": "No stock movement for this article.",
     "supply": "Supply", "sale": "Record a sale", "inventory": "Take inventory"
   },
-  "movementTypes": { "FoodSupply": "Food supply", "NonFoodSupply": "Non-food supply", "Sale": "Sale", "Inventory": "Inventory", "Unknown": "Unknown" },
+  "movementTypes": { "Supply": "Supply", "Sale": "Sale", "Inventory": "Inventory", "Unknown": "Unknown" },
+  "bucketStatuses": { "Empty": "Empty", "Sellable": "Sellable", "Expired": "Expired", "Unsellable": "Unsellable" },
   "packaging": { "New": "New", "Refurbished": "Refurbished", "Unsellable": "Unsellable" },
   "apiAvailability": {
     "title": "Waiting for the API",

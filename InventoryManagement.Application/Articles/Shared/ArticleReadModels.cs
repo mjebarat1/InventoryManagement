@@ -9,10 +9,36 @@ public sealed record StockMovementResult(
     Guid Id,
     DateTime CreatedAt,
     string Type,
-    int Quantity,
+    int QuantityDelta,
+    IReadOnlyCollection<StockMovementLineResult> Lines);
+
+public sealed record StockMovementLineResult(
+    Guid Id,
+    Guid StockBucketId,
+    ArticleKind BucketType,
     DateOnly? ExpirationDate,
     PackagingLevel? PackagingLevel,
-    string? Comment);
+    int QuantityDelta,
+    int? QuantityBefore,
+    int? QuantityAfter);
+
+public sealed record StockBucketResult(
+    Guid Id,
+    DateTime CreatedAt,
+    ArticleKind Type,
+    DateOnly? ExpirationDate,
+    PackagingLevel? PackagingLevel,
+    int PhysicalQuantity,
+    int SellableQuantity,
+    StockBucketStatus Status);
+
+public enum StockBucketStatus
+{
+    Empty,
+    Sellable,
+    Expired,
+    Unsellable
+}
 
 public sealed record ArticleSummaryResult(
     Guid Id,
@@ -32,8 +58,9 @@ public sealed record ArticleDetailsResult(
     IReadOnlyCollection<SaleMode> AllowedSaleModes,
     IReadOnlyCollection<ArticlePriceResult> Prices,
     int TotalStock,
-    int? SellableStock,
-    int? NonSellableStock,
+    int SellableStock,
+    int NonSellableStock,
+    IReadOnlyCollection<StockBucketResult> Buckets,
     IReadOnlyCollection<StockMovementResult> Movements);
 
 public sealed record PagedResult<T>(

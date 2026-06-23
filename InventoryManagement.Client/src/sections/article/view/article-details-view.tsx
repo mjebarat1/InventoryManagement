@@ -1,18 +1,21 @@
-import type { ArticlePrice, ArticleDetails } from 'src/api';
+import type { ArticlePrice, StockMovement, ArticleDetails } from 'src/api';
 
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
+import Collapse from '@mui/material/Collapse';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -21,8 +24,11 @@ import { useTranslate } from 'src/locales';
 import { ApiError, getArticleById } from 'src/api';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Iconify } from 'src/components/iconify';
+
 const formatMoney = (value: number, locale: string) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(value);
 const formatVat = (value: number, locale: string) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value);
+const formatDateOnly = (value: string, locale: string) => new Intl.DateTimeFormat(locale).format(new Date(`${value}T00:00:00`));
 
 export function ArticleDetailsView() {
   const { id } = useParams();
@@ -67,8 +73,8 @@ export function ArticleDetailsView() {
 
   const cards = [
     { label: t('articleDetails.totalStock'), value: String(article.totalStock) },
-    { label: t('articleDetails.sellableStock'), value: article.sellableStock == null ? t('common.unavailable') : String(article.sellableStock) },
-    { label: t('articleDetails.nonSellableStock'), value: article.nonSellableStock == null ? t('common.unavailable') : String(article.nonSellableStock) },
+    { label: t('articleDetails.sellableStock'), value: String(article.sellableStock) },
+    { label: t('articleDetails.nonSellableStock'), value: String(article.nonSellableStock) },
     { label: t('articles.priceExcludingTax'), value: formatMoney(article.priceExcludingTax, locale) },
   ];
 
@@ -104,18 +110,53 @@ export function ArticleDetailsView() {
       </Box>
 
       <Card sx={{ mb: 3, overflow: 'hidden' }}>
-        <Typography variant="h6" sx={{ p: 3, pb: 1 }}>{t('articleDetails.movements')}</Typography>
+        <Typography variant="h6" sx={{ p: 3, pb: 1 }}>{t('articleDetails.stockBuckets')}</Typography>
         <TableContainer><Table>
-          <TableHead><TableRow>{['date', 'movementType', 'quantity', 'expirationDate', 'packaging', 'comment'].map((key) => <TableCell key={key}>{t(`articleDetails.${key}`)}</TableCell>)}</TableRow></TableHead>
+          <TableHead><TableRow>
+            <TableCell>{article.type === 'Food' ? t('articleDetails.expirationDate') : t('articleDetails.packaging')}</TableCell>
+            <TableCell>{t('articleDetails.physicalQuantity')}</TableCell>
+            <TableCell>{t('articleDetails.sellableQuantity')}</TableCell>
+            <TableCell>{t('articleDetails.status')}</TableCell>
+          </TableRow></TableHead>
           <TableBody>
-            {article.movements.length === 0 ? <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6 }}>{t('articleDetails.noMovements')}</TableCell></TableRow> : article.movements.map((movement) => (
-              <TableRow key={movement.id}>
-                <TableCell>{new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(movement.createdAt))}</TableCell>
-                <TableCell>{t(`movementTypes.${movement.type}`)}</TableCell>
-                <TableCell>{movement.quantity}</TableCell><TableCell>{movement.expirationDate ?? '—'}</TableCell>
-                <TableCell>{movement.packagingLevel ? t(`packaging.${movement.packagingLevel}`) : '—'}</TableCell><TableCell>{movement.comment ?? '—'}</TableCell>
+            {article.buckets.length === 0 ? (
+              <TableRow><TableCell colSpan={4} align="center" sx={{ py: 6 }}>{t('articleDetails.noBuckets')}</TableCell></TableRow>
+            ) : article.buckets.map((bucket) => (
+              <TableRow key={bucket.id}>
+                <TableCell>
+                  {bucket.type === 'Food' && bucket.expirationDate ? formatDateOnly(bucket.expirationDate, locale) : null}
+                  {bucket.type === 'NonFood' && bucket.packagingLevel ? t(`packaging.${bucket.packagingLevel}`) : null}
+                </TableCell>
+                <TableCell>{bucket.physicalQuantity}</TableCell>
+                <TableCell>{bucket.sellableQuantity}</TableCell>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    label={t(`bucketStatuses.${bucket.status}`)}
+                    color={bucket.status === 'Sellable' ? 'success' : bucket.status === 'Empty' ? 'default' : 'warning'}
+                    variant={bucket.status === 'Empty' ? 'outlined' : 'filled'}
+                  />
+                </TableCell>
               </TableRow>
             ))}
+          </TableBody>
+        </Table></TableContainer>
+      </Card>
+
+      <Card sx={{ mb: 3, overflow: 'hidden' }}>
+        <Typography variant="h6" sx={{ p: 3, pb: 1 }}>{t('articleDetails.movements')}</Typography>
+        <TableContainer><Table>
+          <TableHead><TableRow>
+            <TableCell width={48} />
+            <TableCell>{t('articleDetails.date')}</TableCell>
+            <TableCell>{t('articleDetails.movementType')}</TableCell>
+            <TableCell>{t('articleDetails.quantityDelta')}</TableCell>
+            <TableCell>{t('articleDetails.impactedBuckets')}</TableCell>
+          </TableRow></TableHead>
+          <TableBody>
+            {article.movements.length === 0
+              ? <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}>{t('articleDetails.noMovements')}</TableCell></TableRow>
+              : article.movements.map((movement) => <MovementRows key={movement.id} movement={movement} locale={locale} t={t} />)}
           </TableBody>
         </Table></TableContainer>
       </Card>
@@ -131,4 +172,53 @@ export function ArticleDetailsView() {
 
 function Info({ label, value }: { label: string; value: string }) {
   return <Box><Typography variant="caption" color="text.secondary">{label}</Typography><Typography>{value}</Typography></Box>;
+}
+
+function MovementRows({ movement, locale, t }: { movement: StockMovement; locale: string; t: (key: string) => string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Fragment>
+      <TableRow hover>
+        <TableCell>
+          <IconButton size="small" onClick={() => setOpen((current) => !current)} aria-label={t('articleDetails.toggleMovementLines')}>
+            <Iconify icon={open ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'} />
+          </IconButton>
+        </TableCell>
+        <TableCell>{new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(movement.createdAt))}</TableCell>
+        <TableCell>{t(`movementTypes.${movement.type}`)}</TableCell>
+        <TableCell sx={{ fontWeight: 700, color: movement.quantityDelta >= 0 ? 'success.main' : 'error.main' }}>
+          {movement.quantityDelta > 0 ? `+${movement.quantityDelta}` : movement.quantityDelta}
+        </TableCell>
+        <TableCell>{movement.lines.length}</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell sx={{ p: 0 }} colSpan={5}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ p: 2, bgcolor: 'background.neutral' }}>
+              <Table size="small">
+                <TableHead><TableRow>
+                  <TableCell>{t('articleDetails.bucket')}</TableCell>
+                  <TableCell>{t('articleDetails.quantityDelta')}</TableCell>
+                  <TableCell>{t('articleDetails.quantityBefore')}</TableCell>
+                  <TableCell>{t('articleDetails.quantityAfter')}</TableCell>
+                </TableRow></TableHead>
+                <TableBody>{movement.lines.map((line) => (
+                  <TableRow key={line.id}>
+                    <TableCell>
+                      {line.bucketType === 'Food' && line.expirationDate ? `${t('articleDetails.expirationDate')} ${formatDateOnly(line.expirationDate, locale)}` : null}
+                      {line.bucketType === 'NonFood' && line.packagingLevel ? `${t('articleDetails.packaging')} ${t(`packaging.${line.packagingLevel}`)}` : null}
+                    </TableCell>
+                    <TableCell>{line.quantityDelta > 0 ? `+${line.quantityDelta}` : line.quantityDelta}</TableCell>
+                    <TableCell>{line.quantityBefore ?? '—'}</TableCell>
+                    <TableCell>{line.quantityAfter ?? '—'}</TableCell>
+                  </TableRow>
+                ))}</TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </Fragment>
+  );
 }

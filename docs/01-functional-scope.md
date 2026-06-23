@@ -44,7 +44,7 @@ Un article alimentaire possède :
 - une indication de vente à emporter ;
 - une indication de vente sur place si nécessaire selon le modèle retenu.
 
-La DLC est portée par chaque mouvement d’approvisionnement alimentaire, et non par la fiche article.
+La DLC est portée par chaque bucket alimentaire, et non par la fiche article ou le mouvement global.
 
 La TVA dépend du mode de vente :
 
@@ -57,7 +57,7 @@ Si un article peut être vendu dans plusieurs modes, le modèle doit permettre d
 
 ## Articles non alimentaires
 
-Le niveau de packaging d’un article non alimentaire est porté par chaque mouvement d’approvisionnement :
+Le niveau de packaging d’un article non alimentaire est porté par chaque bucket de stock :
 
 - neuf ;
 - reconditionné ;
@@ -71,7 +71,7 @@ Un article invendable ne doit pas être considéré comme du stock vendable.
 
 ## Stock
 
-La quantité en stock d’un article correspond à la somme des approvisionnements depuis le dernier inventaire, moins les quantités vendues.
+La quantité en stock d’un article correspond à la somme des `QuantityDelta` de ses lignes de mouvements, regroupées par bucket.
 
 L’inventaire permet de réaligner le système avec la réalité physique de l’entrepôt.
 
@@ -85,11 +85,11 @@ Les mouvements de stock identifiés sont :
 - vente ;
 - inventaire.
 
-Un approvisionnement augmente le stock.
+Un approvisionnement ajoute une ligne positive sur un bucket.
 
-Une vente diminue le stock.
+Une vente ajoute une ou plusieurs lignes négatives sur les buckets consommés.
 
-Un inventaire remet le stock au niveau constaté physiquement.
+Un inventaire ajoute des lignes d’ajustement représentant les écarts constatés par bucket.
 
 ---
 

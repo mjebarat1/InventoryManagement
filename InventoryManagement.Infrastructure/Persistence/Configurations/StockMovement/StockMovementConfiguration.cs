@@ -20,19 +20,12 @@ namespace InventoryManagement.Infrastructure.Persistence.Configurations.StockMov
             builder.Property(movement => movement.ArticleId)
                 .IsRequired();
 
-            builder.OwnsOne(movement => movement.Quantity, quantity =>
-            {
-                quantity.Property(x => x.Value)
-                    .HasColumnName("Quantity")
-                    .IsRequired();
-            });
 
             builder.Property(movement => movement.CreatedAt)
                 .IsRequired();
 
             builder.HasDiscriminator<string>("MovementType")
-                .HasValue<FoodSupplyMovement>("FoodSupply")
-                .HasValue<NonFoodSupplyMovement>("NonFoodSupply")
+                .HasValue<SupplyMovement>("Supply")
                 .HasValue<SaleMovement>("Sale")
                 .HasValue<InventoryMovement>("Inventory");
 
@@ -41,7 +34,16 @@ namespace InventoryManagement.Infrastructure.Persistence.Configurations.StockMov
                 .HasForeignKey(movement => movement.ArticleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasMany(movement => movement.Lines)
+            .WithOne( x => x.StockMovement)
+            .HasForeignKey(line => line.StockMovementId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(movement => movement.Lines)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
             builder.HasIndex(movement => movement.ArticleId);
+            builder.HasIndex(movement => movement.CreatedAt);
         }
     }
 }

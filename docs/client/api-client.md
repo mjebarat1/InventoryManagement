@@ -73,6 +73,8 @@ Le module `src/api/articles-api.ts` centralise la création alimentaire et non a
 
 Après une création, le client utilise uniquement l'identifiant retourné puis recharge la fiche avec `GET /api/articles/{id}`. La fiche est ainsi identique qu'elle soit ouverte après création ou depuis la grille.
 
+Le contrat de détail expose également les buckets de stock et les lignes de mouvements. Le client affiche les quantités fournies par l'API et ne recalcule ni les deltas, ni le stock vendable, ni les statuts de buckets.
+
 ### CORS
 
 Le backend applique la policy `ClientCors`. En développement local, elle autorise le client Vite servi depuis `http://localhost:3039` ou `http://127.0.0.1:3039`.

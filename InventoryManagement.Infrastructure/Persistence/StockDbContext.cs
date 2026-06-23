@@ -1,5 +1,6 @@
 ﻿using InventoryManagement.Domain.Articles;
 using InventoryManagement.Domain.StockMovement;
+using InventoryManagement.Domain.StockBucket;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,10 @@ namespace InventoryManagement.Infrastructure.Persistence
         public DbSet<Article> Articles { get; set; }
 
         public DbSet<StockMovement> StockMovements { get; set; }
+
+        public DbSet<StockBucket> StockBuckets { get; set; }
+
+        public DbSet<StockMovementLine> StockMovementLines { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

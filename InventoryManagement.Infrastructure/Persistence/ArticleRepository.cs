@@ -35,6 +35,7 @@ namespace InventoryManagement.Infrastructure.Persistence
             return await _context.Articles
                 .AsNoTracking()
                 .Include(article => article.StockMovements)
+                    .ThenInclude(movement => movement.Lines)
                 .AsSplitQuery()
                 .SingleOrDefaultAsync(article => article.Id == articleId, cancellationToken);
         }
@@ -46,6 +47,7 @@ namespace InventoryManagement.Infrastructure.Persistence
             IQueryable<Domain.Articles.Article> query = _context.Articles
                 .AsNoTracking()
                 .Include(article => article.StockMovements)
+                    .ThenInclude(movement => movement.Lines)
                 .AsSplitQuery();
 
             if (criteria.Type == ArticleKind.Food)

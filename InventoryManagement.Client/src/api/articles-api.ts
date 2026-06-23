@@ -24,17 +24,40 @@ export type ArticleSummary = {
 export type StockMovement = {
   id: string;
   createdAt: string;
-  type: 'FoodSupply' | 'NonFoodSupply' | 'Sale' | 'Inventory' | 'Unknown';
-  quantity: number;
+  type: 'Supply' | 'Sale' | 'Inventory' | 'Unknown';
+  quantityDelta: number;
+  lines: StockMovementLine[];
+};
+
+export type StockMovementLine = {
+  id: string;
+  stockBucketId: string;
+  bucketType: ArticleKind;
   expirationDate: string | null;
   packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
-  comment: string | null;
+  quantityDelta: number;
+  quantityBefore: number | null;
+  quantityAfter: number | null;
+};
+
+export type StockBucketStatus = 'Empty' | 'Sellable' | 'Expired' | 'Unsellable';
+
+export type StockBucket = {
+  id: string;
+  createdAt: string;
+  type: ArticleKind;
+  expirationDate: string | null;
+  packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
+  physicalQuantity: number;
+  sellableQuantity: number;
+  status: StockBucketStatus;
 };
 
 export type ArticleDetails = ArticleSummary & {
   allowedSaleModes: SaleMode[];
-  sellableStock: number | null;
-  nonSellableStock: number | null;
+  sellableStock: number;
+  nonSellableStock: number;
+  buckets: StockBucket[];
   movements: StockMovement[];
 };
 

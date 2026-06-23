@@ -1,4 +1,5 @@
 ﻿using InventoryManagement.Domain.Articles;
+using InventoryManagement.Domain.Shared;
 using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
 using System;
@@ -11,10 +12,13 @@ namespace InventoryManagement.Domain.StockMovement
 {
     public abstract class StockMovement
     {
+        private readonly List<StockMovementLine> _lines = new();
+
         public Guid Id { get; private set; }
         public Guid ArticleId { get; private set; }
-        public Quantity Quantity { get; protected set; }
         public DateTime CreatedAt { get; private set; }
+
+        public IReadOnlyCollection<StockMovementLine> Lines => _lines.AsReadOnly();
 
         public Article? Article { get; private set; }
 
@@ -24,18 +28,21 @@ namespace InventoryManagement.Domain.StockMovement
             // EF core
         }
 
-
-        protected StockMovement(Guid articleId, Quantity quantity)
+        protected StockMovement(Guid articleId)
         {
             if (articleId == Guid.Empty)
                 throw new BusinessRuleException("L'article est obligatoire.");
 
             Id = Guid.NewGuid();
             ArticleId = articleId;
-            Quantity = quantity;
             CreatedAt = DateTime.UtcNow;
         }
 
-        public abstract Quantity ApplyTo(Quantity currentStock);
+
+        protected void AddLine(StockMovementLine line)
+        {
+            _lines.Add(line);
+        }
+
     }
 }

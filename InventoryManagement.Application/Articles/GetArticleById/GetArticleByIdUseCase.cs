@@ -6,9 +6,14 @@ namespace InventoryManagement.Application.Articles.GetArticleById;
 
 public sealed class GetArticleByIdUseCase : IGetArticleByIdUseCase
 {
-    private readonly IArticleRepository _articleRepository;
+    private readonly IArticleStockReadRepository _articleStockReadRepository;
+    private readonly IClock _clock;
 
-    public GetArticleByIdUseCase(IArticleRepository articleRepository) => _articleRepository = articleRepository;
+    public GetArticleByIdUseCase(IArticleStockReadRepository articleStockReadRepository, IClock clock)
+    {
+        _articleStockReadRepository = articleStockReadRepository;
+        _clock = clock;
+    }
 
     public async Task<ArticleDetailsResult?> ExecuteAsync(
         GetArticleByIdQuery query,
@@ -17,7 +22,9 @@ public sealed class GetArticleByIdUseCase : IGetArticleByIdUseCase
         if (query.ArticleId == Guid.Empty)
             return null;
 
-        var article = await _articleRepository.GetByIdAsync(query.ArticleId, cancellationToken);
-        return article is null ? null : ArticleReadModelMapper.ToDetails(article);
+        var snapshot = await _articleStockReadRepository.GetByArticleIdAsync(query.ArticleId, cancellationToken);
+        return snapshot is null
+            ? null
+            : ArticleReadModelMapper.ToDetails(snapshot, DateOnly.FromDateTime(_clock.Today));
     }
 }

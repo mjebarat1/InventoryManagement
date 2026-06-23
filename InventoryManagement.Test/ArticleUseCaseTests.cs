@@ -5,6 +5,8 @@ using InventoryManagement.Application.Ports.Out;
 using InventoryManagement.Domain.Articles;
 using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
+using InventoryManagement.Domain.StockBucket;
+using InventoryManagement.Domain.StockMovement;
 
 namespace InventoryManagement.Test;
 
@@ -47,11 +49,76 @@ public sealed class ArticleUseCaseTests
     [Fact]
     public async Task GetArticleById_ReturnsNullWhenArticleDoesNotExist()
     {
-        var useCase = new GetArticleByIdUseCase(new FakeArticleRepository());
+        var useCase = new GetArticleByIdUseCase(
+            new FakeArticleStockReadRepository(null),
+            new FakeClock(new DateTime(2026, 6, 23)));
 
         var result = await useCase.ExecuteAsync(new GetArticleByIdQuery(Guid.NewGuid()));
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetArticleById_CalculatesStocksFromMovementLineDeltas()
+    {
+        var article = NonFoodArticle.Create(
+            Ean13Reference.Create("1234567890123"),
+            "Casque audio",
+            Money.FromDecimal(99.99m));
+        var sellableBucket = NonFoodStockBucket.Create(article.Id, PackagingLevel.New);
+        var unsellableBucket = NonFoodStockBucket.Create(article.Id, PackagingLevel.Unsellable);
+        var movements = new StockMovement[]
+        {
+            SupplyMovement.Create(article.Id, sellableBucket.Id, Quantity.CreatePositive(10)),
+            SupplyMovement.Create(article.Id, unsellableBucket.Id, Quantity.CreatePositive(3))
+        };
+        var snapshot = new ArticleStockSnapshot(
+            article,
+            new StockBucket[] { sellableBucket, unsellableBucket },
+            movements);
+        var useCase = new GetArticleByIdUseCase(
+            new FakeArticleStockReadRepository(snapshot),
+            new FakeClock(new DateTime(2026, 6, 23)));
+
+        var result = await useCase.ExecuteAsync(new GetArticleByIdQuery(article.Id));
+
+        Assert.NotNull(result);
+        Assert.Equal(13, result.TotalStock);
+        Assert.Equal(10, result.SellableStock);
+        Assert.Equal(3, result.NonSellableStock);
+        Assert.Contains(result.Buckets, bucket => bucket.Status == InventoryManagement.Application.Articles.Shared.StockBucketStatus.Sellable);
+        Assert.Contains(result.Buckets, bucket => bucket.Status == InventoryManagement.Application.Articles.Shared.StockBucketStatus.Unsellable);
+        Assert.All(result.Movements, movement => Assert.Equal(movement.QuantityDelta, movement.Lines.Sum(line => line.QuantityDelta)));
+    }
+
+    [Fact]
+    public async Task GetArticleById_UsesClockForFoodBucketStatus()
+    {
+        var article = FoodArticle.Create(
+            Ean13Reference.Create("1234567890123"),
+            "Yaourt",
+            Money.FromDecimal(2.50m),
+            new[] { SaleMode.TakeAway });
+        var expiredBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 6, 22));
+        var emptyBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 7, 1));
+        var snapshot = new ArticleStockSnapshot(
+            article,
+            new StockBucket[] { expiredBucket, emptyBucket },
+            new StockMovement[]
+            {
+                SupplyMovement.Create(article.Id, expiredBucket.Id, Quantity.CreatePositive(5))
+            });
+        var useCase = new GetArticleByIdUseCase(
+            new FakeArticleStockReadRepository(snapshot),
+            new FakeClock(new DateTime(2026, 6, 23)));
+
+        var result = await useCase.ExecuteAsync(new GetArticleByIdQuery(article.Id));
+
+        Assert.NotNull(result);
+        Assert.Equal(0, result.SellableStock);
+        Assert.Equal(5, result.NonSellableStock);
+        Assert.Contains(result.Buckets, bucket => bucket.Status == InventoryManagement.Application.Articles.Shared.StockBucketStatus.Expired);
+        Assert.Contains(result.Buckets, bucket => bucket.Status == InventoryManagement.Application.Articles.Shared.StockBucketStatus.Empty);
     }
 
     private sealed class FakeArticleRepository : IArticleRepository
@@ -76,5 +143,30 @@ public sealed class ArticleUseCaseTests
             ArticleSearchCriteria criteria,
             CancellationToken cancellationToken = default)
             => Task.FromResult(new ArticleSearchPage(Array.Empty<Article>(), 0));
+    }
+
+    private sealed class FakeArticleStockReadRepository : IArticleStockReadRepository
+    {
+        private readonly ArticleStockSnapshot? _snapshot;
+
+        public FakeArticleStockReadRepository(ArticleStockSnapshot? snapshot)
+        {
+            _snapshot = snapshot;
+        }
+
+        public Task<ArticleStockSnapshot?> GetByArticleIdAsync(
+            Guid articleId,
+            CancellationToken cancellationToken = default) => Task.FromResult(_snapshot);
+    }
+
+    private sealed class FakeClock : IClock
+    {
+        public FakeClock(DateTime today)
+        {
+            Today = today;
+        }
+
+        public DateTime Today { get; }
+        public DateTime UtcNow => Today.ToUniversalTime();
     }
 }

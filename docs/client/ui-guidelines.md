@@ -80,7 +80,7 @@ La page Articles appelle la recherche avec une pagination configurable, limitée
 
 Le formulaire de création est unique et adapte les modes de vente au type sélectionné. La fiche article est une route autonome utilisée après création et depuis la grille. Les actions d'approvisionnement, vente et inventaire sont visibles mais désactivées jusqu'à l'implémentation de leurs scénarios.
 
-Les stocks vendable et non vendable sont affichés comme indisponibles tant que leur calcul backend n'est pas implémenté.
+La fiche article affiche les stocks total, vendable et non vendable calculés par le backend. Un tableau « Lots de stock » présente la DLC ou le packaging, les quantités et le statut de chaque bucket. L'historique des mouvements reste global et ses lignes peuvent être dépliées pour consulter les buckets impactés.
 
 ## Identité visuelle
 

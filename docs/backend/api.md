@@ -101,7 +101,19 @@ Une création réussie retourne `201 Created` avec `{ "id": "..." }`.
 
 ### GET /api/articles/{id}
 
-Retourne les informations principales, les tarifs calculés par mode de vente, le stock total et les mouvements. `sellableStock` et `nonSellableStock` restent `null` tant que leurs règles métier ne sont pas implémentées. Retourne `404 Not Found` lorsque l'article n'existe pas.
+Retourne les informations principales, les tarifs calculés par mode de vente, les quantités de synthèse, les buckets et les mouvements.
+
+Les quantités sont calculées exclusivement depuis `StockMovementLine.QuantityDelta` :
+
+- `totalStock` : somme des quantités physiques des buckets ;
+- `sellableStock` : somme des buckets vendables à la date de consultation ;
+- `nonSellableStock` : somme des buckets expirés ou invendables.
+
+Chaque élément de `buckets` contient la DLC ou le packaging, la quantité physique, la quantité vendable et le statut `Empty`, `Sellable`, `Expired` ou `Unsellable`.
+
+Chaque mouvement expose son `quantityDelta` agrégé et ses `lines`. Une ligne contient le bucket impacté, son delta et les quantités avant/après. La DLC et le packaging ne sont plus exposés au niveau du mouvement global.
+
+Retourne `404 Not Found` lorsque l'article n'existe pas.
 
 ### Stock
 

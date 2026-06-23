@@ -73,7 +73,7 @@ Elle ne doit pas être codée uniquement dans le controller ou le client.
 
 ## Article alimentaire
 
-La DLC n’est pas une propriété de la fiche article. Elle est obligatoire sur chaque mouvement d’approvisionnement alimentaire.
+La DLC n’est pas une propriété de la fiche article ou du mouvement. Elle est obligatoire sur chaque `FoodStockBucket`.
 
 Il peut être :
 
@@ -87,7 +87,7 @@ Le modèle doit être explicite sur ce point.
 
 ## Article non alimentaire
 
-Le niveau de packaging n’est pas une propriété de la fiche article. Il est obligatoire sur les mouvements d’approvisionnement non alimentaire.
+Le niveau de packaging n’est pas une propriété de la fiche article ou du mouvement. Il est obligatoire sur chaque `NonFoodStockBucket`.
 
 Valeurs identifiées :
 
@@ -103,12 +103,12 @@ Un article invendable ne doit normalement pas être considéré comme vendable.
 
 Le stock représente la quantité disponible dans l’entrepôt.
 
-La quantité en stock est calculée à partir des mouvements.
+La quantité en stock est calculée à partir des lignes de mouvements.
 
 Règle métier :
 
 ```txt
-stock = inventaire le plus récent + approvisionnements depuis cet inventaire - ventes depuis cet inventaire
+stock = somme des StockMovementLine.QuantityDelta
 ```
 
 S’il n’existe aucun inventaire, le stock peut être calculé depuis le début de l’historique.
@@ -127,11 +127,11 @@ Types de mouvements :
 - vente ;
 - inventaire.
 
-Un approvisionnement augmente le stock.
+Un approvisionnement crée une ligne positive sur un bucket.
 
-Une vente diminue le stock.
+Une vente crée une ou plusieurs lignes négatives sur les buckets consommés.
 
-Un inventaire fixe la quantité réelle constatée.
+Un inventaire crée des lignes d’ajustement par bucket.
 
 ---
 
@@ -159,8 +159,8 @@ Les invariants à préserver sont notamment :
 - un nom d’article est obligatoire ;
 - un prix HT ne doit pas être négatif ;
 - une quantité ne doit pas être négative lorsqu’elle représente une quantité saisie ;
-- une DLC est obligatoire pour un approvisionnement alimentaire ;
-- un packaging est obligatoire pour un approvisionnement non alimentaire ;
+- une DLC est obligatoire pour un bucket alimentaire ;
+- un packaging est obligatoire pour un bucket non alimentaire ;
 - une vente ne doit pas rendre le stock incohérent, sauf choix fonctionnel documenté.
 
 ---
