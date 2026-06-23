@@ -2,8 +2,10 @@
 
 # Cet index est utilisé lors de l’exécution à partir de VS en mode rapide (par défaut pour la configuration de débogage)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
+USER root
 WORKDIR /app
+RUN mkdir -p /app/data && chown -R $APP_UID /app
+USER $APP_UID
 EXPOSE 8080
 EXPOSE 8081
 

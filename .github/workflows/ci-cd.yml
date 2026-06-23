@@ -1,0 +1,68 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  API_IMAGE_NAME: ghcr.io/jebaratm/inventorymanagement-api
+  CLIENT_IMAGE_NAME: ghcr.io/jebaratm/inventorymanagement-client
+
+jobs:
+  build-test-and-push:
+    name: Build, test and publish Docker images
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore API
+        run: dotnet restore InventoryManagement.Api/InventoryManagement.Api.csproj
+
+      - name: Build API
+        run: dotnet build InventoryManagement.Api/InventoryManagement.Api.csproj --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build API Docker image
+        run: |
+          docker build \
+            -f InventoryManagement.Api/Dockerfile \
+            -t $API_IMAGE_NAME:latest \
+            -t $API_IMAGE_NAME:${{ github.sha }} \
+            .
+
+      - name: Push API Docker image
+        run: |
+          docker push $API_IMAGE_NAME:latest
+          docker push $API_IMAGE_NAME:${{ github.sha }}
+
+      - name: Build client Docker image
+        run: |
+          docker build \
+            -f InventoryManagement.Client/Dockerfile \
+            --build-arg VITE_API_BASE_URL=${{ vars.PROD_API_BASE_URL }} \
+            -t $CLIENT_IMAGE_NAME:latest \
+            -t $CLIENT_IMAGE_NAME:${{ github.sha }} \
+            ./InventoryManagement.Client
+
+      - name: Push client Docker image
+        run: |
+          docker push $CLIENT_IMAGE_NAME:latest
+          docker push $CLIENT_IMAGE_NAME:${{ github.sha }}

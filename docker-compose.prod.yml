@@ -1,0 +1,20 @@
+services:
+  inventorymanagement.api:
+    image: ghcr.io/jebaratm/inventorymanagement-api:latest
+    container_name: inventorymanagement-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - /opt/inventorymanagement/data:/app/data
+  inventorymanagement.client:
+    image: ghcr.io/jebaratm/inventorymanagement-client:latest
+    container_name: inventorymanagement-client
+    restart: unless-stopped
+    ports:
+      - "3039:80"
+    depends_on:
+      - inventorymanagement.api

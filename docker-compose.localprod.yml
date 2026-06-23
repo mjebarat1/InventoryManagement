@@ -1,0 +1,29 @@
+services:
+  inventorymanagement.api:
+    image: inventorymanagement-api:prod-local
+    build:
+      context: .
+      dockerfile: InventoryManagement.Api/Dockerfile
+    container_name: inventorymanagement-api-prod-local
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data-prod:/app/data
+
+  inventorymanagement.client:
+    image: inventorymanagement-client:prod-local
+    build:
+      context: ./InventoryManagement.Client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: inventorymanagement-client-prod-local
+    restart: unless-stopped
+    ports:
+      - "3039:80"
+    depends_on:
+      - inventorymanagement.api
