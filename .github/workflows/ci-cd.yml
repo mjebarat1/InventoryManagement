@@ -66,3 +66,27 @@ jobs:
         run: |
           docker push $CLIENT_IMAGE_NAME:latest
           docker push $CLIENT_IMAGE_NAME:${{ github.sha }}
+  deploy:
+    name: Deploy to docker-host
+    needs: build-test-and-push
+    runs-on: [self-hosted, local]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Backup SQLite database
+        run: |
+          mkdir -p /opt/inventorymanagement/backups
+          if [ -f /opt/inventorymanagement/data/stock-management.db ]; then
+            cp /opt/inventorymanagement/data/stock-management.db \
+              /opt/inventorymanagement/backups/stock-management-$(date +%Y%m%d-%H%M%S).db
+          fi
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Deploy application
+        run: |
+          cd /opt/inventorymanagement
+          docker-compose -f docker-compose.prod.yml pull
+          docker-compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker image prune -f

@@ -49,6 +49,20 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
     app.UseSwaggerUI();
 }
 
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<StockDbContext>();
+
+    logger.LogInformation("Applying database migrations...");
+
+    await dbContext.Database.MigrateAsync();
+
+    logger.LogInformation("Database migrations applied successfully.");
+}
+
 app.UseHttpsRedirection();
 
 app.UseCors(ClientCorsPolicy);
