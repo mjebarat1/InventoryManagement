@@ -54,7 +54,20 @@
     "impactedBuckets": "Lots impactés", "bucket": "Lot", "quantityBefore": "Quantité avant", "quantityAfter": "Quantité après",
     "toggleMovementLines": "Afficher ou masquer les lignes du mouvement",
     "noMovements": "Aucun mouvement de stock pour cet article.",
-    "supply": "Approvisionner", "sale": "Déclarer une vente", "inventory": "Faire un inventaire"
+    "supply": "Ajouter un approvisionnement", "sale": "Déclarer une vente", "inventory": "Faire un inventaire"
+  },
+  "supply": {
+    "title": "Ajouter un approvisionnement",
+    "quantity": "Quantité approvisionnée",
+    "expirationDate": "DLC",
+    "packaging": "Niveau de packaging",
+    "submit": "Enregistrer l’approvisionnement",
+    "success": "Approvisionnement ajouté avec succès.",
+    "refreshError": "L’approvisionnement a été ajouté, mais la fiche n’a pas pu être actualisée.",
+    "validation": {
+      "quantity": "La quantité doit être un entier strictement positif.",
+      "expirationDate": "La DLC est obligatoire."
+    }
   },
   "movementTypes": { "Supply": "Approvisionnement", "Sale": "Vente", "Inventory": "Inventaire", "Unknown": "Inconnu" },
   "bucketStatuses": { "Empty": "Épuisé", "Sellable": "Vendable", "Expired": "Expiré", "Unsellable": "Invendable" },

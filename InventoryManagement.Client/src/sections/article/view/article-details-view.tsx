@@ -1,6 +1,6 @@
 import type { ArticlePrice, StockMovement, ArticleDetails } from 'src/api';
 
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -8,21 +8,30 @@ import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
+import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Collapse from '@mui/material/Collapse';
 import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import IconButton from '@mui/material/IconButton';
+import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
+import FormControl from '@mui/material/FormControl';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useTranslate } from 'src/locales';
-import { ApiError, getArticleById } from 'src/api';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { ApiError, recordSupply, getArticleById } from 'src/api';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -38,19 +47,77 @@ export function ArticleDetailsView() {
   const navigate = useNavigate();
   const [article, setArticle] = useState<ArticleDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [successOpen, setSuccessOpen] = useState(Boolean(location.state?.articleCreated));
+  const [notification, setNotification] = useState<{ severity: 'success' | 'error'; message: string } | null>(
+    location.state?.articleCreated ? { severity: 'success', message: t('articleCreate.success') } : null
+  );
+  const [supplyOpen, setSupplyOpen] = useState(false);
+  const [supplyQuantity, setSupplyQuantity] = useState('');
+  const [supplyExpirationDate, setSupplyExpirationDate] = useState('');
+  const [supplyPackaging, setSupplyPackaging] = useState<'New' | 'Refurbished' | 'Unsellable'>('New');
+  const [supplyError, setSupplyError] = useState<string | null>(null);
+  const [supplySubmitting, setSupplySubmitting] = useState(false);
+
+  const loadArticle = useCallback(async (signal?: AbortSignal) => {
+    if (!id) return;
+    const result = await getArticleById(id, signal);
+    setArticle(result);
+    setError(null);
+  }, [id]);
 
   useEffect(() => {
-    if (!id) return undefined;
     const controller = new AbortController();
-    getArticleById(id, controller.signal)
-      .then(setArticle)
+    loadArticle(controller.signal)
       .catch((caughtError) => {
         if (caughtError instanceof DOMException && caughtError.name === 'AbortError') return;
         setError(caughtError instanceof ApiError ? caughtError.message : t('common.error'));
       });
     return () => controller.abort();
-  }, [id, t]);
+  }, [loadArticle, t]);
+
+  const openSupplyDialog = () => {
+    setSupplyQuantity('');
+    setSupplyExpirationDate('');
+    setSupplyPackaging('New');
+    setSupplyError(null);
+    setSupplyOpen(true);
+  };
+
+  const submitSupply = async () => {
+    if (!id || !article) return;
+    const quantity = Number(supplyQuantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      setSupplyError(t('supply.validation.quantity'));
+      return;
+    }
+    if (article.type === 'Food' && !supplyExpirationDate) {
+      setSupplyError(t('supply.validation.expirationDate'));
+      return;
+    }
+
+    setSupplySubmitting(true);
+    setSupplyError(null);
+    try {
+      await recordSupply(id, {
+        quantity,
+        expirationDate: article.type === 'Food' ? supplyExpirationDate : null,
+        packagingLevel: article.type === 'NonFood' ? supplyPackaging : null,
+      });
+      setSupplyOpen(false);
+      setNotification({ severity: 'success', message: t('supply.success') });
+
+      try {
+        await loadArticle();
+      } catch {
+        setNotification({ severity: 'error', message: t('supply.refreshError') });
+      }
+    } catch (caughtError) {
+      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      setSupplyError(message);
+      setNotification({ severity: 'error', message });
+    } finally {
+      setSupplySubmitting(false);
+    }
+  };
 
   if (!article && !error) {
     return <DashboardContent><Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box></DashboardContent>;
@@ -80,8 +147,8 @@ export function ArticleDetailsView() {
 
   return (
     <DashboardContent>
-      <Snackbar open={successOpen} autoHideDuration={4000} onClose={() => setSuccessOpen(false)}>
-        <Alert severity="success" onClose={() => setSuccessOpen(false)}>{t('articleCreate.success')}</Alert>
+      <Snackbar open={notification !== null} autoHideDuration={4000} onClose={() => setNotification(null)}>
+        <Alert severity={notification?.severity ?? 'success'} onClose={() => setNotification(null)}>{notification?.message}</Alert>
       </Snackbar>
       <Box sx={(theme) => ({ mb: 3, p: { xs: 2.5, md: 3.5 }, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 3, color: 'common.white', background: `linear-gradient(135deg, ${theme.vars.palette.primary.main} 0%, ${theme.vars.palette.secondary.dark} 100%)`, boxShadow: theme.vars.customShadows.primary })}>
         <Box sx={{ flexGrow: 1 }}>
@@ -107,6 +174,12 @@ export function ArticleDetailsView() {
         {cards.map((card, index) => <Card key={card.label} sx={{ p: 2, borderTop: 3, borderTopColor: ['primary.main', 'success.main', 'warning.main', 'secondary.main'][index] }}><Typography variant="caption" color="text.secondary">{card.label}</Typography><Typography variant="h6" sx={{ color: index === 1 ? 'success.dark' : 'text.primary' }}>{card.value}</Typography></Card>)}
         <Card sx={{ p: 2, borderTop: 3, borderTopColor: 'info.main' }}><Typography variant="caption" color="text.secondary">{t('articles.priceIncludingTax')}</Typography>{renderPrices((price) => price.priceIncludingTax, (value) => formatMoney(value, locale))}</Card>
         <Card sx={{ p: 2, borderTop: 3, borderTopColor: 'warning.main' }}><Typography variant="caption" color="text.secondary">{t('articles.vat')}</Typography>{renderPrices((price) => price.vatRate, (value) => formatVat(value, locale))}</Card>
+      </Box>
+
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+        <Button variant="contained" onClick={openSupplyDialog}>{t('articleDetails.supply')}</Button>
+        <Button variant="contained" disabled>{t('articleDetails.sale')}</Button>
+        <Button variant="contained" disabled>{t('articleDetails.inventory')}</Button>
       </Box>
 
       <Card sx={{ mb: 3, overflow: 'hidden' }}>
@@ -161,11 +234,52 @@ export function ArticleDetailsView() {
         </Table></TableContainer>
       </Card>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-        <Button variant="contained" disabled>{t('articleDetails.supply')}</Button>
-        <Button variant="contained" disabled>{t('articleDetails.sale')}</Button>
-        <Button variant="contained" disabled>{t('articleDetails.inventory')}</Button>
-      </Box>
+      <Dialog open={supplyOpen} onClose={() => !supplySubmitting && setSupplyOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{t('supply.title')}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gap: 3, pt: 1 }}>
+            {supplyError && <Alert severity="error">{supplyError}</Alert>}
+            <TextField
+              required
+              type="number"
+              label={t('supply.quantity')}
+              value={supplyQuantity}
+              inputProps={{ min: 1, step: 1 }}
+              onChange={(event) => setSupplyQuantity(event.target.value)}
+            />
+            {article.type === 'Food' ? (
+              <TextField
+                required
+                type="date"
+                label={t('supply.expirationDate')}
+                value={supplyExpirationDate}
+                InputLabelProps={{ shrink: true }}
+                onChange={(event) => setSupplyExpirationDate(event.target.value)}
+              />
+            ) : (
+              <FormControl required>
+                <InputLabel id="supply-packaging-label">{t('supply.packaging')}</InputLabel>
+                <Select
+                  labelId="supply-packaging-label"
+                  label={t('supply.packaging')}
+                  value={supplyPackaging}
+                  onChange={(event) => setSupplyPackaging(event.target.value as typeof supplyPackaging)}
+                >
+                  <MenuItem value="New">{t('packaging.New')}</MenuItem>
+                  <MenuItem value="Refurbished">{t('packaging.Refurbished')}</MenuItem>
+                  <MenuItem value="Unsellable">{t('packaging.Unsellable')}</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSupplyOpen(false)} disabled={supplySubmitting}>{t('common.cancel')}</Button>
+          <Button variant="contained" onClick={submitSupply} disabled={supplySubmitting}>
+            {supplySubmitting ? t('common.loading') : t('supply.submit')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }

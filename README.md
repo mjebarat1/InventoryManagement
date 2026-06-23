@@ -107,8 +107,7 @@ Elle contient notamment :
 - StockBucket
 - StockMovement
 - StockMovementLine
-- FoodSupplyMovement
-- NonFoodSupplyMovement
+- SupplyMovement
 - SaleMovement
 - InventoryMovement
 - Ean13Reference
@@ -226,7 +225,7 @@ Bucket 2 :
 Un approvisionnement alimentaire crée :
 
 ```text
-FoodSupplyMovement
+SupplyMovement
 - représente l’événement métier d’approvisionnement
 
 StockBucket
@@ -289,7 +288,7 @@ Bucket 3 :
 Un approvisionnement non alimentaire crée :
 
 ```text
-NonFoodSupplyMovement
+SupplyMovement
 - représente l’événement métier d’approvisionnement
 
 StockBucket
@@ -403,7 +402,7 @@ Quantité approvisionnée : 40
 DLC : 25/06/2026
 
 Création :
-- FoodSupplyMovement
+- SupplyMovement
 - StockBucket avec DLC 25/06/2026
 - StockMovementLine avec QuantityDelta = +40
 ```
@@ -416,7 +415,7 @@ Quantité approvisionnée : 10
 Packaging : New
 
 Création :
-- NonFoodSupplyMovement
+- SupplyMovement
 - StockBucket avec Packaging = New
 - StockMovementLine avec QuantityDelta = +10
 ```

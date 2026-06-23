@@ -76,6 +76,7 @@ Ajouter ici les endpoints existants.
 | POST | `/api/articles/non-food` | Crée un article non alimentaire | Implémenté |
 | POST | `/api/articles/search` | Recherche paginée, filtrée et triée | Implémenté |
 | GET | `/api/articles/{id}` | Consulte une fiche article et ses mouvements | Implémenté |
+| POST | `/api/articles/{id}/supplies` | Enregistre un approvisionnement | Implémenté |
 
 ### Création d'article
 
@@ -114,6 +115,26 @@ Chaque élément de `buckets` contient la DLC ou le packaging, la quantité phys
 Chaque mouvement expose son `quantityDelta` agrégé et ses `lines`. Une ligne contient le bucket impacté, son delta et les quantités avant/après. La DLC et le packaging ne sont plus exposés au niveau du mouvement global.
 
 Retourne `404 Not Found` lorsque l'article n'existe pas.
+
+### POST /api/articles/{id}/supplies
+
+Crée un nouveau bucket, un `SupplyMovement` et une ligne positive dans une seule transaction.
+
+```json
+{
+  "quantity": 10,
+  "expirationDate": "2026-07-15",
+  "packagingLevel": null
+}
+```
+
+- `quantity` est obligatoire et strictement positive ;
+- `expirationDate` est obligatoire uniquement pour un article Food ;
+- `packagingLevel` est obligatoire uniquement pour un article NonFood ;
+- chaque approvisionnement crée un nouveau bucket ;
+- une DLC passée est acceptée, mais le bucket est immédiatement non vendable.
+
+Retourne `201 Created` avec `movementId` et `bucketId`, `404 Not Found` si l'article n'existe pas et `400 Bad Request` lorsque les données sont incompatibles avec son type.
 
 ### Stock
 

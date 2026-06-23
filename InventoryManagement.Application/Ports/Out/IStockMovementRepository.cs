@@ -8,5 +8,9 @@ namespace InventoryManagement.Application.Ports.Out
 {
     public interface IStockMovementRepository
     {
+        Task AddSupplyAsync(
+            Domain.StockBucket.StockBucket bucket,
+            Domain.StockMovement.SupplyMovement movement,
+            CancellationToken cancellationToken = default);
     }
 }

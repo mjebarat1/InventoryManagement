@@ -82,6 +82,8 @@ Le formulaire de création est unique et adapte les modes de vente au type séle
 
 La fiche article affiche les stocks total, vendable et non vendable calculés par le backend. Un tableau « Lots de stock » présente la DLC ou le packaging, les quantités et le statut de chaque bucket. L'historique des mouvements reste global et ses lignes peuvent être dépliées pour consulter les buckets impactés.
 
+L'action « Ajouter un approvisionnement » ouvre un dialog adaptatif : DLC pour un article alimentaire, packaging pour un article non alimentaire. En cas de succès, le dialog est fermé et la fiche est actualisée sans navigation. En cas d'erreur, le dialog reste ouvert et conserve les valeurs saisies.
+
 ## Identité visuelle
 
 Le client conserve le thème Minimal existant avec une palette bleu indigo, des accents turquoise et des couleurs sémantiques. Les bandeaux de pages utilisent un dégradé, la navigation active reprend la couleur primaire et les cards de synthèse distinguent visuellement stock, prix et TVA. Les types d'article et états sont présentés avec des badges colorés, sans modifier les règles métier.

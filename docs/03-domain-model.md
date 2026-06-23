@@ -133,6 +133,12 @@ Une vente crée une ou plusieurs lignes négatives sur les buckets consommés.
 
 Un inventaire crée des lignes d’ajustement par bucket.
 
+## Approvisionnement
+
+Chaque approvisionnement crée un nouveau bucket adapté au type d'article, puis un `SupplyMovement` contenant une ligne positive. Pour cette ligne, `QuantityBefore` vaut zéro, `QuantityDelta` vaut la quantité approvisionnée et `QuantityAfter` vaut cette même quantité.
+
+La DLC ou le packaging appartient exclusivement au bucket. Le mouvement global ne porte aucune de ces informations.
+
 ---
 
 ## Stock vendable

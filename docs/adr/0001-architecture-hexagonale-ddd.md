@@ -448,7 +448,7 @@ Cette option a été écartée.
 Le packaging est porté par le mouvement d’approvisionnement non alimentaire.
 
 ```text
-NonFoodSupplyMovement
+SupplyMovement associé à un NonFoodStockBucket
 └── PackagingLevel
 ```
 
@@ -485,7 +485,7 @@ La DLC n’est pas portée directement par `FoodArticle`.
 Elle est portée par le mouvement d’approvisionnement alimentaire.
 
 ```text
-FoodSupplyMovement
+SupplyMovement associé à un FoodStockBucket
 └── ExpirationDate
 ```
 

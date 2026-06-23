@@ -54,7 +54,20 @@
     "impactedBuckets": "Impacted lots", "bucket": "Lot", "quantityBefore": "Quantity before", "quantityAfter": "Quantity after",
     "toggleMovementLines": "Show or hide movement lines",
     "noMovements": "No stock movement for this article.",
-    "supply": "Supply", "sale": "Record a sale", "inventory": "Take inventory"
+    "supply": "Add a supply", "sale": "Record a sale", "inventory": "Take inventory"
+  },
+  "supply": {
+    "title": "Add a supply",
+    "quantity": "Supplied quantity",
+    "expirationDate": "Expiration date",
+    "packaging": "Packaging level",
+    "submit": "Save supply",
+    "success": "Supply added successfully.",
+    "refreshError": "The supply was added, but the article details could not be refreshed.",
+    "validation": {
+      "quantity": "The quantity must be a strictly positive integer.",
+      "expirationDate": "The expiration date is required."
+    }
   },
   "movementTypes": { "Supply": "Supply", "Sale": "Sale", "Inventory": "Inventory", "Unknown": "Unknown" },
   "bucketStatuses": { "Empty": "Empty", "Sellable": "Sellable", "Expired": "Expired", "Unsellable": "Unsellable" },

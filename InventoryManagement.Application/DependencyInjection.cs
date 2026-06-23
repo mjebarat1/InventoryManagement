@@ -3,6 +3,7 @@ using InventoryManagement.Application.Ports.In;
 using InventoryManagement.Application.Articles.CreateNonFoodArticle;
 using InventoryManagement.Application.Articles.GetArticleById;
 using InventoryManagement.Application.Articles.SearchArticles;
+using InventoryManagement.Application.Articles.RecordSupply;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace InventoryManagement.Application
             services.AddScoped<ICreateNonFoodArticleUseCase, CreateNonFoodArticleUseCase>();
             services.AddScoped<IGetArticleByIdUseCase, GetArticleByIdUseCase>();
             services.AddScoped<ISearchArticlesUseCase, SearchArticlesUseCase>();
+            services.AddScoped<IRecordSupplyUseCase, RecordSupplyUseCase>();
 
             return services;
         }

@@ -9,6 +9,21 @@ namespace InventoryManagement.Infrastructure.Persistence
 {
     internal class StockMovementRepository : IStockMovementRepository
     {
+        private readonly StockDbContext _context;
 
+        public StockMovementRepository(StockDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task AddSupplyAsync(
+            Domain.StockBucket.StockBucket bucket,
+            Domain.StockMovement.SupplyMovement movement,
+            CancellationToken cancellationToken = default)
+        {
+            await _context.StockBuckets.AddAsync(bucket, cancellationToken);
+            await _context.StockMovements.AddAsync(movement, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

@@ -80,6 +80,13 @@ export type PagedArticles = {
 };
 
 type CreatedArticle = { id: string };
+type RecordedSupply = { movementId: string; bucketId: string };
+
+export type RecordSupplyRequest = {
+  quantity: number;
+  expirationDate: string | null;
+  packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
+};
 
 export function searchArticles(request: SearchArticlesRequest, signal?: AbortSignal) {
   return apiRequest<PagedArticles>('/api/articles/search', {
@@ -111,6 +118,13 @@ export function createNonFoodArticle(request: {
   priceExcludingTax: number;
 }) {
   return apiRequest<CreatedArticle>('/api/articles/non-food', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function recordSupply(articleId: string, request: RecordSupplyRequest) {
+  return apiRequest<RecordedSupply>(`/api/articles/${articleId}/supplies`, {
     method: 'POST',
     body: JSON.stringify(request),
   });

@@ -3,6 +3,7 @@ using InventoryManagement.Application.Articles.CreateFoodArticle;
 using InventoryManagement.Application.Articles.CreateNonFoodArticle;
 using InventoryManagement.Application.Articles.GetArticleById;
 using InventoryManagement.Application.Articles.SearchArticles;
+using InventoryManagement.Application.Articles.RecordSupply;
 using InventoryManagement.Application.Ports.In;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,17 +18,20 @@ namespace InventoryManagement.Api.Controllers
         private readonly ICreateNonFoodArticleUseCase _createNonFoodArticleUseCase;
         private readonly ISearchArticlesUseCase _searchArticlesUseCase;
         private readonly IGetArticleByIdUseCase _getArticleByIdUseCase;
+        private readonly IRecordSupplyUseCase _recordSupplyUseCase;
 
         public ArticlesController(
             ICreateFoodArticleUseCase createFoodArticleUseCase,
             ICreateNonFoodArticleUseCase createNonFoodArticleUseCase,
             ISearchArticlesUseCase searchArticlesUseCase,
-            IGetArticleByIdUseCase getArticleByIdUseCase)
+            IGetArticleByIdUseCase getArticleByIdUseCase,
+            IRecordSupplyUseCase recordSupplyUseCase)
         {
             _createFoodArticleUseCase = createFoodArticleUseCase;
             _createNonFoodArticleUseCase = createNonFoodArticleUseCase;
             _searchArticlesUseCase = searchArticlesUseCase;
             _getArticleByIdUseCase = getArticleByIdUseCase;
+            _recordSupplyUseCase = recordSupplyUseCase;
         }
 
         [HttpPost("food")]
@@ -93,6 +97,29 @@ namespace InventoryManagement.Api.Controllers
                 cancellationToken);
 
             return result is null ? NotFound() : Ok(result);
+        }
+
+        [HttpPost("{id:guid}/supplies")]
+        public async Task<IActionResult> RecordSupply(
+            Guid id,
+            [FromBody] RecordSupplyRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _recordSupplyUseCase.ExecuteAsync(
+                new RecordSupplyCommand(
+                    id,
+                    request.Quantity,
+                    request.ExpirationDate,
+                    request.PackagingLevel),
+                cancellationToken);
+
+            return result is null
+                ? NotFound()
+                : StatusCode(StatusCodes.Status201Created, new
+                {
+                    movementId = result.MovementId,
+                    bucketId = result.BucketId
+                });
         }
     }
 }

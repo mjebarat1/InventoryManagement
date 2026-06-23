@@ -75,6 +75,8 @@ Après une création, le client utilise uniquement l'identifiant retourné puis 
 
 Le contrat de détail expose également les buckets de stock et les lignes de mouvements. Le client affiche les quantités fournies par l'API et ne recalcule ni les deltas, ni le stock vendable, ni les statuts de buckets.
 
+Le module Articles expose également `recordSupply`. Après une création réussie, la fiche reste sur la route courante et recharge ses données avec `GET /api/articles/{id}`.
+
 ### CORS
 
 Le backend applique la policy `ClientCors`. En développement local, elle autorise le client Vite servi depuis `http://localhost:3039` ou `http://127.0.0.1:3039`.
