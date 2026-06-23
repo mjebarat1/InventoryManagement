@@ -21,6 +21,11 @@ namespace InventoryManagement.Domain.Shared
         Quantity ConsumedQuantity
     );
 
+    public sealed record StockBucketAvailability(
+        StockBucket.StockBucket Bucket,
+        Quantity CurrentQuantity
+    );
+
     public sealed record StockInventoryAdjustment(
         Guid StockBucketId,
         Quantity CurrentQuantity,

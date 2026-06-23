@@ -77,6 +77,7 @@ Ajouter ici les endpoints existants.
 | POST | `/api/articles/search` | Recherche paginée, filtrée et triée | Implémenté |
 | GET | `/api/articles/{id}` | Consulte une fiche article et ses mouvements | Implémenté |
 | POST | `/api/articles/{id}/supplies` | Enregistre un approvisionnement | Implémenté |
+| POST | `/api/articles/{id}/sales` | Enregistre une vente | Implémenté |
 
 ### Création d'article
 
@@ -135,6 +136,25 @@ Crée un nouveau bucket, un `SupplyMovement` et une ligne positive dans une seul
 - une DLC passée est acceptée, mais le bucket est immédiatement non vendable.
 
 Retourne `201 Created` avec `movementId` et `bucketId`, `404 Not Found` si l'article n'existe pas et `400 Bad Request` lorsque les données sont incompatibles avec son type.
+
+### POST /api/articles/{id}/sales
+
+```json
+{
+  "quantity": 3,
+  "saleMode": "TakeAway"
+}
+```
+
+- `quantity` est obligatoire et strictement positive ;
+- `saleMode` est obligatoire pour un article Food et doit faire partie de ses modes autorisés ;
+- `saleMode` doit être absent ou `null` pour un article NonFood ;
+- Food consomme les buckets vendables en FEFO ;
+- NonFood consomme les buckets vendables par date de création et exclut `Unsellable` ;
+- une ou plusieurs lignes négatives sont créées atomiquement ;
+- un stock vendable insuffisant refuse toute la vente avec `400 Bad Request`.
+
+Retourne `201 Created` avec `movementId` et `soldQuantity`, ou `404 Not Found` si l'article n'existe pas.
 
 ### Stock
 

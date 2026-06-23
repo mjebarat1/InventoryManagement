@@ -1,11 +1,6 @@
 ﻿using InventoryManagement.Domain.Shared;
-using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using InventoryManagement.Domain.Articles;
 
 namespace InventoryManagement.Domain.StockMovement
 {
@@ -14,30 +9,42 @@ namespace InventoryManagement.Domain.StockMovement
         public Money UnitPriceExcludingTax { get; private set; }
         public Money UnitPriceIncludingTax { get; private set; }
         public VatRate VatRate { get; private set; }
+        public SaleMode? SaleMode { get; private set; }
 
         private SaleMovement()
         {
             // EF Core
         }
 
-        private SaleMovement(Guid articleId,Money unitPriceExcludingTax, Money unitPriceIncludingTax, VatRate VatRate)
+        private SaleMovement(
+            Guid articleId,
+            Money unitPriceExcludingTax,
+            Money unitPriceIncludingTax,
+            VatRate vatRate,
+            SaleMode? saleMode)
             : base(articleId)
         {
             UnitPriceExcludingTax = unitPriceExcludingTax;
             UnitPriceIncludingTax = unitPriceIncludingTax;
-            this.VatRate = VatRate;
+            VatRate = vatRate;
+            SaleMode = saleMode;
         }
 
 
         public static SaleMovement Create(
             Guid articleId,
-            Guid stockBucketId,
             Money unitPriceExcludingTax,
             Money unitPriceIncludingTax,
             VatRate vatRate,
+            SaleMode? saleMode,
             IReadOnlyCollection<StockConsumption> consumptions)
         {
-            var movement = new SaleMovement(articleId, unitPriceExcludingTax, unitPriceIncludingTax, vatRate);
+            var movement = new SaleMovement(
+                articleId,
+                unitPriceExcludingTax,
+                unitPriceIncludingTax,
+                vatRate,
+                saleMode);
 
             foreach (var consumption in consumptions)
             {
@@ -49,20 +56,6 @@ namespace InventoryManagement.Domain.StockMovement
             }
 
             return movement;
-        }
-
-        public void ConsumeBucket(
-            Guid stockBucketId,
-            Quantity currentQuantity,
-            Quantity consumedQuantity)
-        {
-            var quantityAfter = currentQuantity - consumedQuantity;
-
-            AddLine(StockMovementLine.CreateConsumptionLine(
-                stockMovementId: Id,
-                stockBucketId: stockBucketId,
-                currentQuantity: currentQuantity,
-                consumedQuantity: consumedQuantity));
         }
     }
 }

@@ -75,6 +75,8 @@ La quantité en stock d’un article correspond à la somme des `QuantityDelta` 
 
 L’inventaire permet de réaligner le système avec la réalité physique de l’entrepôt.
 
+Une vente dont la quantité dépasse le stock vendable est refusée intégralement. Aucune vente partielle et aucune ligne de mouvement ne sont enregistrées.
+
 ---
 
 ## Mouvements de stock

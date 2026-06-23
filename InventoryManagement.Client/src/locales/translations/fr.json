@@ -69,6 +69,24 @@
       "expirationDate": "La DLC est obligatoire."
     }
   },
+  "sale": {
+    "title": "Déclarer une vente",
+    "quantity": "Quantité vendue",
+    "saleMode": "Mode de vente",
+    "submit": "Enregistrer la vente",
+    "success": "Vente enregistrée avec succès.",
+    "refreshError": "La vente a été enregistrée, mais la fiche n’a pas pu être actualisée.",
+    "soldQuantity": "Quantité vendue",
+    "unitPriceExcludingTax": "Prix unitaire HT",
+    "unitPriceIncludingTax": "Prix unitaire TTC",
+    "vatRate": "Taux de TVA",
+    "totalExcludingTax": "Total HT",
+    "totalIncludingTax": "Total TTC",
+    "validation": {
+      "quantity": "La quantité doit être un entier strictement positif.",
+      "saleMode": "Le mode de vente est obligatoire."
+    }
+  },
   "movementTypes": { "Supply": "Approvisionnement", "Sale": "Vente", "Inventory": "Inventaire", "Unknown": "Inconnu" },
   "bucketStatuses": { "Empty": "Épuisé", "Sellable": "Vendable", "Expired": "Expiré", "Unsellable": "Invendable" },
   "packaging": { "New": "Neuf", "Refurbished": "Reconditionné", "Unsellable": "Invendable" },

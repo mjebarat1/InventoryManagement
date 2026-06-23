@@ -8,6 +8,10 @@ namespace InventoryManagement.Infrastructure.Persistence.Configurations.StockMov
     {
         public void Configure(EntityTypeBuilder<SaleMovement> builder)
         {
+            builder.Property(movement => movement.SaleMode)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
             builder.OwnsOne(movement => movement.UnitPriceExcludingTax, money =>
             {
                 money.Property(x => x.Amount)

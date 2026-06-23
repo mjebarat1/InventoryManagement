@@ -715,6 +715,8 @@ dotnet ef migrations add AddStockBucketsAndMovementLines --project ./InventoryMa
 
 La migration corrective `RemovePackagingLevelFromSupplyMovement` supprime la colonne résiduelle `PackagingLevel` de `ArticleMovements`, cette donnée étant désormais portée uniquement par `NonFoodStockBucket`.
 
+La migration `AddSaleModeToSaleMovement` ajoute le mode de vente nullable aux mouvements de vente afin de conserver l'historique du mode appliqué aux ventes alimentaires.
+
 ### Appliquer les migrations
 
 ```bash
@@ -934,6 +936,8 @@ Codex a également été utilisé pour certaines tâches d’implémentation, no
 - génération ou adaptation de code frontend ;
 - ajout de tests ;
 - mise à jour de documentation.
+
+Le scénario de vente a notamment été assisté pour l'allocation FEFO/FIFO, la persistance des lignes négatives, l'intégration API/client et la préparation des tests. Les règles de refus atomique sur stock insuffisant et les arbitrages d'allocation ont été validés humainement.
 
 Le code final a été relu, adapté et organisé manuellement.
 

@@ -1,4 +1,4 @@
-import type { ArticlePrice, StockMovement, ArticleDetails } from 'src/api';
+import type { SaleMode, ArticlePrice, StockMovement, ArticleDetails } from 'src/api';
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
@@ -31,7 +31,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useTranslate } from 'src/locales';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ApiError, recordSupply, getArticleById } from 'src/api';
+import { ApiError, recordSale, recordSupply, getArticleById } from 'src/api';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -56,6 +56,11 @@ export function ArticleDetailsView() {
   const [supplyPackaging, setSupplyPackaging] = useState<'New' | 'Refurbished' | 'Unsellable'>('New');
   const [supplyError, setSupplyError] = useState<string | null>(null);
   const [supplySubmitting, setSupplySubmitting] = useState(false);
+  const [saleOpen, setSaleOpen] = useState(false);
+  const [saleQuantity, setSaleQuantity] = useState('');
+  const [saleMode, setSaleMode] = useState<SaleMode | ''>('');
+  const [saleError, setSaleError] = useState<string | null>(null);
+  const [saleSubmitting, setSaleSubmitting] = useState(false);
 
   const loadArticle = useCallback(async (signal?: AbortSignal) => {
     if (!id) return;
@@ -119,6 +124,49 @@ export function ArticleDetailsView() {
     }
   };
 
+  const openSaleDialog = () => {
+    setSaleQuantity('');
+    setSaleMode(article?.type === 'Food' && article.allowedSaleModes.length === 1 ? article.allowedSaleModes[0] : '');
+    setSaleError(null);
+    setSaleOpen(true);
+  };
+
+  const submitSale = async () => {
+    if (!id || !article) return;
+    const quantity = Number(saleQuantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      setSaleError(t('sale.validation.quantity'));
+      return;
+    }
+    if (article.type === 'Food' && !saleMode) {
+      setSaleError(t('sale.validation.saleMode'));
+      return;
+    }
+
+    setSaleSubmitting(true);
+    setSaleError(null);
+    try {
+      await recordSale(id, {
+        quantity,
+        saleMode: article.type === 'Food' ? saleMode || null : null,
+      });
+      setSaleOpen(false);
+      setNotification({ severity: 'success', message: t('sale.success') });
+
+      try {
+        await loadArticle();
+      } catch {
+        setNotification({ severity: 'error', message: t('sale.refreshError') });
+      }
+    } catch (caughtError) {
+      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      setSaleError(message);
+      setNotification({ severity: 'error', message });
+    } finally {
+      setSaleSubmitting(false);
+    }
+  };
+
   if (!article && !error) {
     return <DashboardContent><Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box></DashboardContent>;
   }
@@ -178,7 +226,7 @@ export function ArticleDetailsView() {
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <Button variant="contained" onClick={openSupplyDialog}>{t('articleDetails.supply')}</Button>
-        <Button variant="contained" disabled>{t('articleDetails.sale')}</Button>
+        <Button variant="contained" onClick={openSaleDialog}>{t('articleDetails.sale')}</Button>
         <Button variant="contained" disabled>{t('articleDetails.inventory')}</Button>
       </Box>
 
@@ -280,6 +328,46 @@ export function ArticleDetailsView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={saleOpen} onClose={() => !saleSubmitting && setSaleOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{t('sale.title')}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gap: 3, pt: 1 }}>
+            {saleError && <Alert severity="error">{saleError}</Alert>}
+            <TextField
+              required
+              type="number"
+              label={t('sale.quantity')}
+              value={saleQuantity}
+              inputProps={{ min: 1, step: 1 }}
+              onChange={(event) => setSaleQuantity(event.target.value)}
+            />
+            {article.type === 'Food' && (
+              <FormControl required>
+                <InputLabel id="sale-mode-label">{t('sale.saleMode')}</InputLabel>
+                <Select
+                  labelId="sale-mode-label"
+                  label={t('sale.saleMode')}
+                  value={saleMode}
+                  onChange={(event) => setSaleMode(event.target.value as SaleMode)}
+                >
+                  {article.allowedSaleModes.map((mode) => (
+                    <MenuItem key={mode} value={mode}>
+                      {t(`saleModes.${mode === 'TakeAway' ? 'takeAway' : 'onSite'}`)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSaleOpen(false)} disabled={saleSubmitting}>{t('common.cancel')}</Button>
+          <Button variant="contained" onClick={submitSale} disabled={saleSubmitting}>
+            {saleSubmitting ? t('common.loading') : t('sale.submit')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }
@@ -290,14 +378,17 @@ function Info({ label, value }: { label: string; value: string }) {
 
 function MovementRows({ movement, locale, t }: { movement: StockMovement; locale: string; t: (key: string) => string }) {
   const [open, setOpen] = useState(false);
+  const canExpand = movement.type !== 'Supply';
 
   return (
     <Fragment>
       <TableRow hover>
         <TableCell>
-          <IconButton size="small" onClick={() => setOpen((current) => !current)} aria-label={t('articleDetails.toggleMovementLines')}>
-            <Iconify icon={open ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'} />
-          </IconButton>
+          {canExpand && (
+            <IconButton size="small" onClick={() => setOpen((current) => !current)} aria-label={t('articleDetails.toggleMovementLines')}>
+              <Iconify icon={open ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'} />
+            </IconButton>
+          )}
         </TableCell>
         <TableCell>{new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(movement.createdAt))}</TableCell>
         <TableCell>{t(`movementTypes.${movement.type}`)}</TableCell>
@@ -306,10 +397,26 @@ function MovementRows({ movement, locale, t }: { movement: StockMovement; locale
         </TableCell>
         <TableCell>{movement.lines.length}</TableCell>
       </TableRow>
-      <TableRow>
+      {canExpand && <TableRow>
         <TableCell sx={{ p: 0 }} colSpan={5}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ p: 2, bgcolor: 'background.neutral' }}>
+              {movement.type === 'Sale' && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 2 }}>
+                  {movement.saleMode && (
+                    <Info
+                      label={t('sale.saleMode')}
+                      value={t(`saleModes.${movement.saleMode === 'TakeAway' ? 'takeAway' : 'onSite'}`)}
+                    />
+                  )}
+                  <Info label={t('sale.soldQuantity')} value={String(movement.soldQuantity ?? 0)} />
+                  <Info label={t('sale.unitPriceExcludingTax')} value={formatMoney(movement.unitPriceExcludingTax ?? 0, locale)} />
+                  <Info label={t('sale.unitPriceIncludingTax')} value={formatMoney(movement.unitPriceIncludingTax ?? 0, locale)} />
+                  <Info label={t('sale.vatRate')} value={formatVat(movement.vatRate ?? 0, locale)} />
+                  <Info label={t('sale.totalExcludingTax')} value={formatMoney(movement.totalExcludingTax ?? 0, locale)} />
+                  <Info label={t('sale.totalIncludingTax')} value={formatMoney(movement.totalIncludingTax ?? 0, locale)} />
+                </Box>
+              )}
               <Table size="small">
                 <TableHead><TableRow>
                   <TableCell>{t('articleDetails.bucket')}</TableCell>
@@ -332,7 +439,7 @@ function MovementRows({ movement, locale, t }: { movement: StockMovement; locale
             </Box>
           </Collapse>
         </TableCell>
-      </TableRow>
+      </TableRow>}
     </Fragment>
   );
 }

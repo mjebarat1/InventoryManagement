@@ -10,6 +10,13 @@ public sealed record StockMovementResult(
     DateTime CreatedAt,
     string Type,
     int QuantityDelta,
+    SaleMode? SaleMode,
+    int? SoldQuantity,
+    decimal? UnitPriceExcludingTax,
+    decimal? UnitPriceIncludingTax,
+    decimal? VatRate,
+    decimal? TotalExcludingTax,
+    decimal? TotalIncludingTax,
     IReadOnlyCollection<StockMovementLineResult> Lines);
 
 public sealed record StockMovementLineResult(

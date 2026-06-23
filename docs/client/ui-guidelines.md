@@ -78,11 +78,13 @@ Tout n’est pas obligatoire pour l’exercice.
 
 La page Articles appelle la recherche avec une pagination configurable, limitée à 100 lignes, des filtres sur la référence, le nom et le type, ainsi qu'un tri contrôlé.
 
-Le formulaire de création est unique et adapte les modes de vente au type sélectionné. La fiche article est une route autonome utilisée après création et depuis la grille. Les actions d'approvisionnement, vente et inventaire sont visibles mais désactivées jusqu'à l'implémentation de leurs scénarios.
+Le formulaire de création est unique et adapte les modes de vente au type sélectionné. La fiche article est une route autonome utilisée après création et depuis la grille. Les actions d'approvisionnement et de vente sont actives ; l'inventaire reste visible mais désactivé jusqu'à l'implémentation de son scénario.
 
 La fiche article affiche les stocks total, vendable et non vendable calculés par le backend. Un tableau « Lots de stock » présente la DLC ou le packaging, les quantités et le statut de chaque bucket. L'historique des mouvements reste global et ses lignes peuvent être dépliées pour consulter les buckets impactés.
 
 L'action « Ajouter un approvisionnement » ouvre un dialog adaptatif : DLC pour un article alimentaire, packaging pour un article non alimentaire. En cas de succès, le dialog est fermé et la fiche est actualisée sans navigation. En cas d'erreur, le dialog reste ouvert et conserve les valeurs saisies.
+
+L'action « Déclarer une vente » ouvre un dialog avec une quantité et, pour un article alimentaire, un mode limité aux modes autorisés. Le mode unique est présélectionné. Un succès actualise la fiche sans navigation ; une erreur, notamment un stock insuffisant, conserve le dialog ouvert et est affichée dans le formulaire et dans un snackbar.
 
 ## Identité visuelle
 

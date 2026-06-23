@@ -145,5 +145,8 @@ public sealed class RecordSupplyUseCaseTests
             Movement = movement;
             return Task.CompletedTask;
         }
+
+        public Task AddSaleAsync(SaleMovement movement, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

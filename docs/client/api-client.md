@@ -77,6 +77,8 @@ Le contrat de détail expose également les buckets de stock et les lignes de mo
 
 Le module Articles expose également `recordSupply`. Après une création réussie, la fiche reste sur la route courante et recharge ses données avec `GET /api/articles/{id}`.
 
+Le module Articles expose `recordSale` pour `POST /api/articles/{id}/sales`. Après succès, le client recharge la fiche courante. Les choix de buckets, la disponibilité, la TVA et les montants restent calculés et validés par le backend.
+
 ### CORS
 
 Le backend applique la policy `ClientCors`. En développement local, elle autorise le client Vite servi depuis `http://localhost:3039` ou `http://127.0.0.1:3039`.

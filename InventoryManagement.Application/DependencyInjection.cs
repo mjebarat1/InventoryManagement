@@ -4,6 +4,8 @@ using InventoryManagement.Application.Articles.CreateNonFoodArticle;
 using InventoryManagement.Application.Articles.GetArticleById;
 using InventoryManagement.Application.Articles.SearchArticles;
 using InventoryManagement.Application.Articles.RecordSupply;
+using InventoryManagement.Application.Articles.RecordSale;
+using InventoryManagement.Domain.StockMovement;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -22,6 +24,8 @@ namespace InventoryManagement.Application
             services.AddScoped<IGetArticleByIdUseCase, GetArticleByIdUseCase>();
             services.AddScoped<ISearchArticlesUseCase, SearchArticlesUseCase>();
             services.AddScoped<IRecordSupplyUseCase, RecordSupplyUseCase>();
+            services.AddScoped<IRecordSaleUseCase, RecordSaleUseCase>();
+            services.AddScoped<StockSaleAllocator>();
 
             return services;
         }

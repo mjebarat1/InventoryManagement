@@ -26,6 +26,13 @@ export type StockMovement = {
   createdAt: string;
   type: 'Supply' | 'Sale' | 'Inventory' | 'Unknown';
   quantityDelta: number;
+  saleMode: SaleMode | null;
+  soldQuantity: number | null;
+  unitPriceExcludingTax: number | null;
+  unitPriceIncludingTax: number | null;
+  vatRate: number | null;
+  totalExcludingTax: number | null;
+  totalIncludingTax: number | null;
   lines: StockMovementLine[];
 };
 
@@ -81,11 +88,17 @@ export type PagedArticles = {
 
 type CreatedArticle = { id: string };
 type RecordedSupply = { movementId: string; bucketId: string };
+type RecordedSale = { movementId: string; soldQuantity: number };
 
 export type RecordSupplyRequest = {
   quantity: number;
   expirationDate: string | null;
   packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
+};
+
+export type RecordSaleRequest = {
+  quantity: number;
+  saleMode: SaleMode | null;
 };
 
 export function searchArticles(request: SearchArticlesRequest, signal?: AbortSignal) {
@@ -125,6 +138,13 @@ export function createNonFoodArticle(request: {
 
 export function recordSupply(articleId: string, request: RecordSupplyRequest) {
   return apiRequest<RecordedSupply>(`/api/articles/${articleId}/supplies`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function recordSale(articleId: string, request: RecordSaleRequest) {
+  return apiRequest<RecordedSale>(`/api/articles/${articleId}/sales`, {
     method: 'POST',
     body: JSON.stringify(request),
   });

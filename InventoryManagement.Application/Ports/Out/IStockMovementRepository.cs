@@ -12,5 +12,9 @@ namespace InventoryManagement.Application.Ports.Out
             Domain.StockBucket.StockBucket bucket,
             Domain.StockMovement.SupplyMovement movement,
             CancellationToken cancellationToken = default);
+
+        Task AddSaleAsync(
+            Domain.StockMovement.SaleMovement movement,
+            CancellationToken cancellationToken = default);
     }
 }

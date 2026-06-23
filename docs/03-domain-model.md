@@ -141,6 +141,14 @@ La DLC ou le packaging appartient exclusivement au bucket. Le mouvement global n
 
 ---
 
+## Vente
+
+Une vente consomme une ou plusieurs quantités de buckets au moyen de lignes négatives. Pour un article alimentaire, seuls les buckets non expirés sont utilisés, dans l'ordre FEFO (DLC la plus proche puis date de création). Pour un article non alimentaire, seuls les buckets `New` et `Refurbished` sont utilisés, dans l'ordre de création. Les buckets `Unsellable` ne sont jamais consommés.
+
+La vente est atomique : si le stock vendable total est inférieur à la quantité demandée, elle est entièrement refusée. Le `SaleMovement` conserve le prix unitaire HT, le prix unitaire TTC, le taux de TVA et, pour un article alimentaire, le mode de vente appliqué. La quantité vendue et les totaux sont calculés depuis les `StockMovementLine.QuantityDelta` négatifs.
+
+---
+
 ## Stock vendable
 
 Le stock vendable peut différer du stock total.
@@ -175,7 +183,6 @@ Les invariants à préserver sont notamment :
 
 Les points suivants doivent être arbitrés si nécessaire :
 
-- doit-on autoriser une vente avec stock insuffisant ?
 - doit-on stocker le prix TTC ou le calculer ?
 - doit-on créer un endpoint unique de création d’article ou deux endpoints séparés ?
 - doit-on gérer la suppression physique ou logique des articles ?

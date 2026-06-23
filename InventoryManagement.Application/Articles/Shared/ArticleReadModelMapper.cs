@@ -129,6 +129,11 @@ internal static class ArticleReadModelMapper
                 line.QuantityAfter?.Value);
         }).ToArray();
 
+        var sale = movement as SaleMovement;
+        var soldQuantity = sale is null
+            ? (int?)null
+            : Math.Abs(lines.Where(line => line.QuantityDelta < 0).Sum(line => line.QuantityDelta));
+
         return new StockMovementResult(
             movement.Id,
             movement.CreatedAt,
@@ -140,6 +145,13 @@ internal static class ArticleReadModelMapper
                 _ => "Unknown"
             },
             lines.Sum(line => line.QuantityDelta),
+            sale?.SaleMode,
+            soldQuantity,
+            sale?.UnitPriceExcludingTax.Amount,
+            sale?.UnitPriceIncludingTax.Amount,
+            sale?.VatRate.Value,
+            sale is null ? null : soldQuantity * sale.UnitPriceExcludingTax.Amount,
+            sale is null ? null : soldQuantity * sale.UnitPriceIncludingTax.Amount,
             lines);
     }
 }

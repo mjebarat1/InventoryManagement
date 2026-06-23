@@ -69,6 +69,24 @@
       "expirationDate": "The expiration date is required."
     }
   },
+  "sale": {
+    "title": "Record a sale",
+    "quantity": "Sold quantity",
+    "saleMode": "Sale mode",
+    "submit": "Save sale",
+    "success": "Sale recorded successfully.",
+    "refreshError": "The sale was recorded, but the article details could not be refreshed.",
+    "soldQuantity": "Sold quantity",
+    "unitPriceExcludingTax": "Unit price excl. tax",
+    "unitPriceIncludingTax": "Unit price incl. tax",
+    "vatRate": "VAT rate",
+    "totalExcludingTax": "Total excl. tax",
+    "totalIncludingTax": "Total incl. tax",
+    "validation": {
+      "quantity": "The quantity must be a strictly positive integer.",
+      "saleMode": "The sale mode is required."
+    }
+  },
   "movementTypes": { "Supply": "Supply", "Sale": "Sale", "Inventory": "Inventory", "Unknown": "Unknown" },
   "bucketStatuses": { "Empty": "Empty", "Sellable": "Sellable", "Expired": "Expired", "Unsellable": "Unsellable" },
   "packaging": { "New": "New", "Refurbished": "Refurbished", "Unsellable": "Unsellable" },

@@ -25,5 +25,13 @@ namespace InventoryManagement.Infrastructure.Persistence
             await _context.StockMovements.AddAsync(movement, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task AddSaleAsync(
+            Domain.StockMovement.SaleMovement movement,
+            CancellationToken cancellationToken = default)
+        {
+            await _context.StockMovements.AddAsync(movement, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

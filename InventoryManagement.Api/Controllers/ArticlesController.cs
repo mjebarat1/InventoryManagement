@@ -4,6 +4,7 @@ using InventoryManagement.Application.Articles.CreateNonFoodArticle;
 using InventoryManagement.Application.Articles.GetArticleById;
 using InventoryManagement.Application.Articles.SearchArticles;
 using InventoryManagement.Application.Articles.RecordSupply;
+using InventoryManagement.Application.Articles.RecordSale;
 using InventoryManagement.Application.Ports.In;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,19 +20,22 @@ namespace InventoryManagement.Api.Controllers
         private readonly ISearchArticlesUseCase _searchArticlesUseCase;
         private readonly IGetArticleByIdUseCase _getArticleByIdUseCase;
         private readonly IRecordSupplyUseCase _recordSupplyUseCase;
+        private readonly IRecordSaleUseCase _recordSaleUseCase;
 
         public ArticlesController(
             ICreateFoodArticleUseCase createFoodArticleUseCase,
             ICreateNonFoodArticleUseCase createNonFoodArticleUseCase,
             ISearchArticlesUseCase searchArticlesUseCase,
             IGetArticleByIdUseCase getArticleByIdUseCase,
-            IRecordSupplyUseCase recordSupplyUseCase)
+            IRecordSupplyUseCase recordSupplyUseCase,
+            IRecordSaleUseCase recordSaleUseCase)
         {
             _createFoodArticleUseCase = createFoodArticleUseCase;
             _createNonFoodArticleUseCase = createNonFoodArticleUseCase;
             _searchArticlesUseCase = searchArticlesUseCase;
             _getArticleByIdUseCase = getArticleByIdUseCase;
             _recordSupplyUseCase = recordSupplyUseCase;
+            _recordSaleUseCase = recordSaleUseCase;
         }
 
         [HttpPost("food")]
@@ -119,6 +123,25 @@ namespace InventoryManagement.Api.Controllers
                 {
                     movementId = result.MovementId,
                     bucketId = result.BucketId
+                });
+        }
+
+        [HttpPost("{id:guid}/sales")]
+        public async Task<IActionResult> RecordSale(
+            Guid id,
+            [FromBody] RecordSaleRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _recordSaleUseCase.ExecuteAsync(
+                new RecordSaleCommand(id, request.Quantity, request.SaleMode),
+                cancellationToken);
+
+            return result is null
+                ? NotFound()
+                : StatusCode(StatusCodes.Status201Created, new
+                {
+                    movementId = result.MovementId,
+                    soldQuantity = result.SoldQuantity
                 });
         }
     }

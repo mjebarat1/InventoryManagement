@@ -22,6 +22,7 @@ import FormControl from '@mui/material/FormControl';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { useTranslate } from 'src/locales';
 import { ApiError, searchArticles } from 'src/api';
@@ -137,7 +138,13 @@ export function ArticlesView() {
             <TableCell>{t('articles.priceIncludingTax')}</TableCell><TableCell>{t('articles.vat')}</TableCell><TableCell>{t('articles.stock')}</TableCell><TableCell>{t('articles.status')}</TableCell><TableCell>{t('articles.actions')}</TableCell>
           </TableRow></TableHead>
           <TableBody>
-            {!loading && items.length === 0 ? <TableRow><TableCell colSpan={9} align="center" sx={{ py: 10 }}><Typography color="text.secondary">{t('articles.noData')}</Typography></TableCell></TableRow> : items.map((article) => (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center" sx={{ py: 10 }}>
+                  <CircularProgress aria-label={t('common.loading')} />
+                </TableCell>
+              </TableRow>
+            ) : items.length === 0 ? <TableRow><TableCell colSpan={9} align="center" sx={{ py: 10 }}><Typography color="text.secondary">{t('articles.noData')}</Typography></TableCell></TableRow> : items.map((article) => (
               <TableRow hover key={article.id} sx={{ '&:hover': { bgcolor: 'primary.lighter' } }}>
                 <TableCell sx={{ fontWeight: 600, color: 'primary.dark' }}>{article.reference}</TableCell><TableCell sx={{ fontWeight: 600 }}>{article.name}</TableCell><TableCell><Chip size="small" label={t(`articleTypes.${article.type === 'Food' ? 'food' : 'nonFood'}`)} color={article.type === 'Food' ? 'success' : 'secondary'} /></TableCell>
                 <TableCell>{new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(article.priceExcludingTax)}</TableCell>
