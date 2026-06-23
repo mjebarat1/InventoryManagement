@@ -80,6 +80,8 @@ Ajouter ici les endpoints existants.
 | POST | `/api/articles/{id}/sales` | Enregistre une vente | Implémenté |
 | POST | `/api/articles/{id}/inventories` | Enregistre un inventaire partiel | Implémenté |
 | POST | `/api/articles/{id}/stock-buckets/search` | Recherche lazy des lots de l'article | Implémenté |
+| PUT | `/api/articles/{id}` | Modifie les champs autorisés d'un article | Implémenté |
+| DELETE | `/api/articles/{id}` | Désactive logiquement un article | Implémenté |
 
 ### Création d'article
 
@@ -96,12 +98,12 @@ Une création réussie retourne `201 Created` avec `{ "id": "..." }`.
   "sortBy": "Reference",
   "sortDirection": "Asc",
   "type": "Food",
-  "reference": null,
-  "name": null
+  "searchTerm": "yaourt",
+  "activityFilter": "Active"
 }
 ```
 
-`pageSize` doit être compris entre 1 et 100. Les filtres sont facultatifs. Les tris autorisés sont `Reference`, `Name`, `Type` et `PriceExcludingTax`. La réponse contient `items`, `pageNumber`, `pageSize`, `totalItems` et `totalPages`.
+`pageSize` doit être compris entre 1 et 100. `searchTerm` recherche avec `Contains` dans le nom ou la référence. Le type est facultatif. `activityFilter` accepte `Active`, `Inactive` ou `All` et vaut `Active` par défaut. Les tris autorisés sont `Reference`, `Name`, `Type` et `PriceExcludingTax`. La réponse contient `items`, `pageNumber`, `pageSize`, `totalItems` et `totalPages`.
 
 ### GET /api/articles/{id}
 
@@ -118,6 +120,22 @@ Chaque élément de `buckets` contient la DLC ou le packaging, la quantité phys
 Chaque mouvement expose son `quantityDelta` agrégé et ses `lines`. Une ligne contient le bucket impacté, son delta et les quantités avant/après. La DLC et le packaging ne sont plus exposés au niveau du mouvement global.
 
 Retourne `404 Not Found` lorsque l'article n'existe pas.
+
+### PUT /api/articles/{id}
+
+```json
+{
+  "name": "Nouveau nom",
+  "priceExcludingTax": 4.50,
+  "allowedSaleModes": ["TakeAway", "OnSite"]
+}
+```
+
+La référence et le type ne font pas partie du contrat. Les modes sont obligatoires pour Food et doivent être absents ou vides pour NonFood. Un article désactivé ne peut pas être modifié. Retourne `204 No Content`, `404 Not Found` ou `400 Bad Request`.
+
+### DELETE /api/articles/{id}
+
+Désactive logiquement l'article en positionnant `IsActive` à `false`. Les lots, mouvements et lignes sont conservés. Une référence désactivée ne peut pas être réutilisée. Retourne `204 No Content`, `404 Not Found` ou `400 Bad Request` si l'article est déjà désactivé.
 
 ### POST /api/articles/{id}/supplies
 

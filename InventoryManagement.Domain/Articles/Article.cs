@@ -14,6 +14,7 @@ namespace InventoryManagement.Domain.Articles
         public Ean13Reference Reference { get; private set; }
         public string Name { get; private set; }
         public Money PriceExcludingTax { get; private set; }
+        public bool IsActive { get; private set; }
 
         public ICollection<StockMovement.StockMovement> StockMovements { get; private set; }
 
@@ -34,6 +35,7 @@ namespace InventoryManagement.Domain.Articles
             Reference = reference;
             Name = name.Trim();
             PriceExcludingTax = priceExcludingTax;
+            IsActive = true;
             StockMovements = new List<StockMovement.StockMovement>();
         }
 
@@ -42,6 +44,28 @@ namespace InventoryManagement.Domain.Articles
         public Money GetPriceIncludingTax(SaleMode saleMode)
         {
             return PriceExcludingTax.AddVat(GetVatRate(saleMode));
+        }
+
+        public void EnsureActive()
+        {
+            if (!IsActive)
+                throw new BusinessRuleException("Cet article est désactivé.");
+        }
+
+        public void Deactivate()
+        {
+            EnsureActive();
+            IsActive = false;
+        }
+
+        protected void UpdateDetails(string name, Money priceExcludingTax)
+        {
+            EnsureActive();
+            if (string.IsNullOrWhiteSpace(name))
+                throw new BusinessRuleException("Le nom de l'article est obligatoire.");
+
+            Name = name.Trim();
+            PriceExcludingTax = priceExcludingTax;
         }
 
     }

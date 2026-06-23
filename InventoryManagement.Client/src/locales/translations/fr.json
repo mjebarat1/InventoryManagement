@@ -15,6 +15,8 @@
   "articles": {
     "title": "Articles",
     "description": "Recherchez, triez et consultez les articles enregistrés.",
+    "searchTerm": "Rechercher par nom ou référence",
+    "activity": "Activité",
     "addArticle": "Ajouter un article",
     "addArticleUnavailable": "Le formulaire d’ajout sera activé lors de son intégration à l’API.",
     "reference": "Référence",
@@ -29,8 +31,10 @@
     "noData": "Aucun article à afficher",
     "apiUnavailable": "L’API ne fournit pas encore d’endpoint documenté pour consulter les articles.",
     "view": "Consulter",
-    "rowsPerPage": "Lignes par page"
+    "rowsPerPage": "Lignes par page",
+    "deactivate": "Désactiver"
   },
+  "articleStatuses": { "active": "Actif", "inactive": "Désactivé" },
   "articleTypes": { "food": "Alimentaire", "nonFood": "Non alimentaire" },
   "saleModes": { "takeAway": "À emporter", "onSite": "Sur place" },
   "articleCreate": {
@@ -54,7 +58,26 @@
     "impactedBuckets": "Lots impactés", "bucket": "Lot", "quantityBefore": "Quantité avant", "quantityAfter": "Quantité après",
     "toggleMovementLines": "Afficher ou masquer les lignes du mouvement",
     "noMovements": "Aucun mouvement de stock pour cet article.",
-    "supply": "Ajouter un approvisionnement", "sale": "Déclarer une vente", "inventory": "Faire un inventaire"
+    "supply": "Ajouter un approvisionnement", "sale": "Déclarer une vente", "inventory": "Faire un inventaire",
+    "inactiveWarning": "Cet article est désactivé. Les actions de modification et de stock ne sont plus disponibles."
+  },
+  "articleEdit": {
+    "action": "Modifier",
+    "title": "Modifier l’article",
+    "success": "Article modifié avec succès.",
+    "refreshError": "L’article a été modifié, mais la fiche n’a pas pu être actualisée.",
+    "validation": {
+      "name": "Le nom est obligatoire.",
+      "price": "Le prix HT doit être un montant positif ou nul.",
+      "saleMode": "Sélectionnez au moins un mode de vente."
+    }
+  },
+  "articleDeactivate": {
+    "title": "Désactiver l’article",
+    "message": "Voulez-vous vraiment désactiver cet article ?",
+    "details": "L’article ne sera plus visible dans les résultats actifs, mais l’historique des lots et des mouvements sera conservé.",
+    "confirm": "Désactiver",
+    "success": "Article désactivé avec succès."
   },
   "supply": {
     "title": "Ajouter un approvisionnement",

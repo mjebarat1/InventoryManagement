@@ -55,6 +55,7 @@ public sealed record ArticleSummaryResult(
     string Reference,
     string Name,
     ArticleKind Type,
+    bool IsActive,
     decimal PriceExcludingTax,
     IReadOnlyCollection<ArticlePriceResult> Prices,
     int TotalStock);
@@ -64,6 +65,7 @@ public sealed record ArticleDetailsResult(
     string Reference,
     string Name,
     ArticleKind Type,
+    bool IsActive,
     decimal PriceExcludingTax,
     IReadOnlyCollection<SaleMode> AllowedSaleModes,
     IReadOnlyCollection<ArticlePriceResult> Prices,

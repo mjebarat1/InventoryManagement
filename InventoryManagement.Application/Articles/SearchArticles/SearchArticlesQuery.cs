@@ -8,5 +8,5 @@ public sealed record SearchArticlesQuery(
     ArticleSortField SortBy,
     SortDirection SortDirection,
     ArticleKind? Type,
-    string? Reference,
-    string? Name);
+    string? SearchTerm,
+    ArticleActivityFilter ActivityFilter);

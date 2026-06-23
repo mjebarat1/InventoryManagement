@@ -12,6 +12,7 @@ internal static class ArticleReadModelMapper
         article.Reference.Value,
         article.Name,
         GetArticleKind(article),
+        article.IsActive,
         article.PriceExcludingTax.Amount,
         GetPrices(article),
         CalculateTotalStock(article.StockMovements));
@@ -40,6 +41,7 @@ internal static class ArticleReadModelMapper
             article.Reference.Value,
             article.Name,
             GetArticleKind(article),
+            article.IsActive,
             article.PriceExcludingTax.Amount,
             article is FoodArticle foodArticle ? foodArticle.SaleModes : Array.Empty<SaleMode>(),
             GetPrices(article),

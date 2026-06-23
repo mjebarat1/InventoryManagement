@@ -7,6 +7,8 @@ using InventoryManagement.Application.Articles.RecordSupply;
 using InventoryManagement.Application.Articles.RecordSale;
 using InventoryManagement.Application.Articles.RecordInventory;
 using InventoryManagement.Application.Articles.SearchStockBuckets;
+using InventoryManagement.Application.Articles.UpdateArticle;
+using InventoryManagement.Application.Articles.DeactivateArticle;
 using InventoryManagement.Application.Ports.In;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +27,8 @@ namespace InventoryManagement.Api.Controllers
         private readonly IRecordSaleUseCase _recordSaleUseCase;
         private readonly IRecordInventoryUseCase _recordInventoryUseCase;
         private readonly ISearchStockBucketsUseCase _searchStockBucketsUseCase;
+        private readonly IUpdateArticleUseCase _updateArticleUseCase;
+        private readonly IDeactivateArticleUseCase _deactivateArticleUseCase;
 
         public ArticlesController(
             ICreateFoodArticleUseCase createFoodArticleUseCase,
@@ -34,7 +38,9 @@ namespace InventoryManagement.Api.Controllers
             IRecordSupplyUseCase recordSupplyUseCase,
             IRecordSaleUseCase recordSaleUseCase,
             IRecordInventoryUseCase recordInventoryUseCase,
-            ISearchStockBucketsUseCase searchStockBucketsUseCase)
+            ISearchStockBucketsUseCase searchStockBucketsUseCase,
+            IUpdateArticleUseCase updateArticleUseCase,
+            IDeactivateArticleUseCase deactivateArticleUseCase)
         {
             _createFoodArticleUseCase = createFoodArticleUseCase;
             _createNonFoodArticleUseCase = createNonFoodArticleUseCase;
@@ -44,6 +50,8 @@ namespace InventoryManagement.Api.Controllers
             _recordSaleUseCase = recordSaleUseCase;
             _recordInventoryUseCase = recordInventoryUseCase;
             _searchStockBucketsUseCase = searchStockBucketsUseCase;
+            _updateArticleUseCase = updateArticleUseCase;
+            _deactivateArticleUseCase = deactivateArticleUseCase;
         }
 
         [HttpPost("food")]
@@ -94,8 +102,8 @@ namespace InventoryManagement.Api.Controllers
                     request.SortBy,
                     request.SortDirection,
                     request.Type,
-                    request.Reference,
-                    request.Name),
+                    request.SearchTerm,
+                    request.ActivityFilter),
                 cancellationToken);
 
             return Ok(result);
@@ -190,6 +198,35 @@ namespace InventoryManagement.Api.Controllers
                 cancellationToken);
 
             return Ok(result);
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateArticle(
+            Guid id,
+            [FromBody] UpdateArticleRequest request,
+            CancellationToken cancellationToken)
+        {
+            var updated = await _updateArticleUseCase.ExecuteAsync(
+                new UpdateArticleCommand(
+                    id,
+                    request.Name,
+                    request.PriceExcludingTax,
+                    request.AllowedSaleModes),
+                cancellationToken);
+
+            return updated ? NoContent() : NotFound();
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeactivateArticle(
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var deactivated = await _deactivateArticleUseCase.ExecuteAsync(
+                new DeactivateArticleCommand(id),
+                cancellationToken);
+
+            return deactivated ? NoContent() : NotFound();
         }
     }
 }

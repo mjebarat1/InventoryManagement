@@ -35,6 +35,8 @@ Un article est caractérisé par :
 
 Le numéro de référence suit le format EAN-13.
 
+Le nom, le prix HT et les modes de vente alimentaires peuvent être modifiés. La référence et le type sont immuables. La suppression d'un article est logique : l'article devient inactif et son historique est conservé.
+
 ---
 
 ## Articles alimentaires

@@ -23,7 +23,7 @@ public sealed class SearchArticlesUseCase : ISearchArticlesUseCase
 
         var page = await _articleRepository.SearchAsync(
             new ArticleSearchCriteria(query.PageNumber, query.PageSize, query.SortBy,
-                query.SortDirection, query.Type, query.Reference, query.Name),
+                query.SortDirection, query.Type, query.SearchTerm, query.ActivityFilter),
             cancellationToken);
 
         var totalPages = page.TotalItems == 0 ? 0 : (int)Math.Ceiling(page.TotalItems / (double)query.PageSize);

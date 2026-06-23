@@ -71,6 +71,8 @@ Les futurs modules fonctionnels, par exemple `articles-api.ts`, devront réutili
 
 Le module `src/api/articles-api.ts` centralise la création alimentaire et non alimentaire, la recherche paginée et la consultation d'une fiche par identifiant.
 
+La recherche envoie un terme unique pour le nom ou la référence, ainsi que les filtres de type et d'activité. Le module expose également `updateArticle` et `deactivateArticle`. Après une mutation, l'écran courant recharge ses données depuis l'API.
+
 Après une création, le client utilise uniquement l'identifiant retourné puis recharge la fiche avec `GET /api/articles/{id}`. La fiche est ainsi identique qu'elle soit ouverte après création ou depuis la grille.
 
 Le contrat de détail expose également les buckets de stock et les lignes de mouvements. Le client affiche les quantités fournies par l'API et ne recalcule ni les deltas, ni le stock vendable, ni les statuts de buckets.

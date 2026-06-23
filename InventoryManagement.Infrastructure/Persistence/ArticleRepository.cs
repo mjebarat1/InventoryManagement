@@ -40,6 +40,18 @@ namespace InventoryManagement.Infrastructure.Persistence
                 .SingleOrDefaultAsync(article => article.Id == articleId, cancellationToken);
         }
 
+        public Task<Domain.Articles.Article?> GetForUpdateByIdAsync(
+            Guid articleId,
+            CancellationToken cancellationToken = default) => _context.Articles
+            .SingleOrDefaultAsync(article => article.Id == articleId, cancellationToken);
+
+        public async Task UpdateAsync(
+            Domain.Articles.Article article,
+            CancellationToken cancellationToken = default)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task<ArticleSearchPage> SearchAsync(
             ArticleSearchCriteria criteria,
             CancellationToken cancellationToken = default)
@@ -55,16 +67,18 @@ namespace InventoryManagement.Infrastructure.Persistence
             else if (criteria.Type == ArticleKind.NonFood)
                 query = query.Where(article => article is Domain.Articles.NonFoodArticle);
 
-            if (!string.IsNullOrWhiteSpace(criteria.Reference))
+            query = criteria.ActivityFilter switch
             {
-                var reference = criteria.Reference.Trim();
-                query = query.Where(article => article.Reference.Value.Contains(reference));
-            }
+                ArticleActivityFilter.Active => query.Where(article => article.IsActive),
+                ArticleActivityFilter.Inactive => query.Where(article => !article.IsActive),
+                _ => query
+            };
 
-            if (!string.IsNullOrWhiteSpace(criteria.Name))
+            if (!string.IsNullOrWhiteSpace(criteria.SearchTerm))
             {
-                var name = criteria.Name.Trim();
-                query = query.Where(article => article.Name.Contains(name));
+                var searchTerm = criteria.SearchTerm.Trim();
+                query = query.Where(article => article.Name.Contains(searchTerm)
+                    || article.Reference.Value.Contains(searchTerm));
             }
 
             var totalItems = await query.CountAsync(cancellationToken);

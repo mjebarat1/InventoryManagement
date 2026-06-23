@@ -36,6 +36,8 @@ public sealed class RecordSaleUseCase : IRecordSaleUseCase
         if (snapshot is null)
             return null;
 
+        snapshot.Article.EnsureActive();
+
         var quantity = Quantity.CreatePositive(command.Quantity);
 
         var (vatRate, priceIncludingTax, persistedSaleMode) = GetPricing(snapshot.Article, command.SaleMode);

@@ -33,6 +33,8 @@ public sealed class RecordInventoryUseCase : IRecordInventoryUseCase
         if (snapshot is null)
             return null;
 
+        snapshot.Article.EnsureActive();
+
         var existingCommands = command.ExistingBuckets
             ?? throw new BusinessRuleException("La liste des lots existants est obligatoire.");
         var newCommands = command.NewBuckets

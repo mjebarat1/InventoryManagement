@@ -32,6 +32,8 @@ public sealed class RecordSupplyUseCase : IRecordSupplyUseCase
         if (article is null)
             return null;
 
+        article.EnsureActive();
+
         var reference = StockBucketReference.Create(command.StockBucketReference);
         if (await _stockBucketRepository.ExistsByReferenceAsync(reference, cancellationToken))
             throw new BusinessRuleException("Cette référence de lot existe déjà.");

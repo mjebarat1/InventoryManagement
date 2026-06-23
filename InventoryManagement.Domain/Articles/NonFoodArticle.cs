@@ -39,5 +39,10 @@ namespace InventoryManagement.Domain.Articles
         {
             return VatRate.NonFood();
         }
+
+        public void Update(string name, Money priceExcludingTax)
+        {
+            UpdateDetails(name, priceExcludingTax);
+        }
     }
 }

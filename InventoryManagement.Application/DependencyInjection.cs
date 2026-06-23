@@ -7,6 +7,8 @@ using InventoryManagement.Application.Articles.RecordSupply;
 using InventoryManagement.Application.Articles.RecordSale;
 using InventoryManagement.Application.Articles.RecordInventory;
 using InventoryManagement.Application.Articles.SearchStockBuckets;
+using InventoryManagement.Application.Articles.UpdateArticle;
+using InventoryManagement.Application.Articles.DeactivateArticle;
 using InventoryManagement.Domain.StockMovement;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -29,6 +31,8 @@ namespace InventoryManagement.Application
             services.AddScoped<IRecordSaleUseCase, RecordSaleUseCase>();
             services.AddScoped<IRecordInventoryUseCase, RecordInventoryUseCase>();
             services.AddScoped<ISearchStockBucketsUseCase, SearchStockBucketsUseCase>();
+            services.AddScoped<IUpdateArticleUseCase, UpdateArticleUseCase>();
+            services.AddScoped<IDeactivateArticleUseCase, DeactivateArticleUseCase>();
             services.AddScoped<StockSaleAllocator>();
 
             return services;

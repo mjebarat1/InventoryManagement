@@ -8,5 +8,5 @@ public sealed record SearchArticlesRequest(
     ArticleSortField SortBy = ArticleSortField.Reference,
     SortDirection SortDirection = SortDirection.Asc,
     ArticleKind? Type = null,
-    string? Reference = null,
-    string? Name = null);
+    string? SearchTerm = null,
+    ArticleActivityFilter ActivityFilter = ArticleActivityFilter.Active);

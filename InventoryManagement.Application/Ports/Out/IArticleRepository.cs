@@ -28,6 +28,10 @@ namespace InventoryManagement.Application.Ports.Out
 
         Task<Article?> GetByIdAsync(Guid articleId, CancellationToken cancellationToken = default);
 
+        Task<Article?> GetForUpdateByIdAsync(Guid articleId, CancellationToken cancellationToken = default);
+
+        Task UpdateAsync(Article article, CancellationToken cancellationToken = default);
+
         Task<ArticleSearchPage> SearchAsync(
             ArticleSearchCriteria criteria,
             CancellationToken cancellationToken = default);
@@ -39,8 +43,8 @@ namespace InventoryManagement.Application.Ports.Out
         ArticleSortField SortBy,
         SortDirection SortDirection,
         ArticleKind? Type,
-        string? Reference,
-        string? Name);
+        string? SearchTerm,
+        ArticleActivityFilter ActivityFilter);
 
     public sealed record ArticleSearchPage(
         IReadOnlyCollection<Article> Items,
@@ -49,4 +53,5 @@ namespace InventoryManagement.Application.Ports.Out
     public enum ArticleKind { Food, NonFood }
     public enum ArticleSortField { Reference, Name, Type, PriceExcludingTax }
     public enum SortDirection { Asc, Desc }
+    public enum ArticleActivityFilter { Active, Inactive, All }
 }

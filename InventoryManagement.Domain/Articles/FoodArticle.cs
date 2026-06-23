@@ -57,6 +57,15 @@ namespace InventoryManagement.Domain.Articles
             };
         }
 
+        public void Update(
+            string name,
+            Money priceExcludingTax,
+            IEnumerable<SaleMode> saleModes)
+        {
+            UpdateDetails(name, priceExcludingTax);
+            SetSaleModes(saleModes);
+        }
+
         private bool CanBeSoldAs(SaleMode saleMode)
         {
             return _saleModes.Any(x => x.Value == saleMode);
@@ -79,8 +88,8 @@ namespace InventoryManagement.Domain.Articles
                 throw new BusinessRuleException("Au moins un mode de vente est obligatoire.");
             }
 
-            _saleModes.Clear();
-            foreach (var saleMode in distinctSaleModes)
+            _saleModes.RemoveAll(existing => !distinctSaleModes.Contains(existing.Value));
+            foreach (var saleMode in distinctSaleModes.Where(mode => !_saleModes.Any(existing => existing.Value == mode)))
                 _saleModes.Add(FoodArticleSaleMode.Create(saleMode));
 
         }

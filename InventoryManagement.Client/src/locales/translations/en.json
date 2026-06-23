@@ -15,6 +15,8 @@
   "articles": {
     "title": "Articles",
     "description": "Search, sort and view registered articles.",
+    "searchTerm": "Search by name or reference",
+    "activity": "Activity",
     "addArticle": "Add an article",
     "addArticleUnavailable": "The add form will be enabled when its API integration is implemented.",
     "reference": "Reference",
@@ -29,8 +31,10 @@
     "noData": "No articles to display",
     "apiUnavailable": "The API does not yet provide a documented endpoint for listing articles.",
     "view": "View",
-    "rowsPerPage": "Rows per page"
+    "rowsPerPage": "Rows per page",
+    "deactivate": "Deactivate"
   },
+  "articleStatuses": { "active": "Active", "inactive": "Inactive" },
   "articleTypes": { "food": "Food", "nonFood": "Non-food" },
   "saleModes": { "takeAway": "Take away", "onSite": "On site" },
   "articleCreate": {
@@ -54,7 +58,26 @@
     "impactedBuckets": "Impacted lots", "bucket": "Lot", "quantityBefore": "Quantity before", "quantityAfter": "Quantity after",
     "toggleMovementLines": "Show or hide movement lines",
     "noMovements": "No stock movement for this article.",
-    "supply": "Add a supply", "sale": "Record a sale", "inventory": "Take inventory"
+    "supply": "Add a supply", "sale": "Record a sale", "inventory": "Take inventory",
+    "inactiveWarning": "This article is inactive. Editing and stock actions are no longer available."
+  },
+  "articleEdit": {
+    "action": "Edit",
+    "title": "Edit article",
+    "success": "Article updated successfully.",
+    "refreshError": "The article was updated, but its details could not be refreshed.",
+    "validation": {
+      "name": "The name is required.",
+      "price": "The price excluding tax must be zero or positive.",
+      "saleMode": "Select at least one sale mode."
+    }
+  },
+  "articleDeactivate": {
+    "title": "Deactivate article",
+    "message": "Do you really want to deactivate this article?",
+    "details": "The article will no longer appear in active results, but its lot and movement history will be preserved.",
+    "confirm": "Deactivate",
+    "success": "Article deactivated successfully."
   },
   "supply": {
     "title": "Add a supply",

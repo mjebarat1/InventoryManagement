@@ -4,6 +4,7 @@ export type ArticleKind = 'Food' | 'NonFood';
 export type SaleMode = 'TakeAway' | 'OnSite';
 export type ArticleSortField = 'Reference' | 'Name' | 'Type' | 'PriceExcludingTax';
 export type SortDirection = 'Asc' | 'Desc';
+export type ArticleActivityFilter = 'Active' | 'Inactive' | 'All';
 
 export type ArticlePrice = {
   saleMode: SaleMode | null;
@@ -16,6 +17,7 @@ export type ArticleSummary = {
   reference: string;
   name: string;
   type: ArticleKind;
+  isActive: boolean;
   priceExcludingTax: number;
   prices: ArticlePrice[];
   totalStock: number;
@@ -77,8 +79,8 @@ export type SearchArticlesRequest = {
   sortBy: ArticleSortField;
   sortDirection: SortDirection;
   type?: ArticleKind;
-  reference?: string;
-  name?: string;
+  searchTerm?: string;
+  activityFilter: ArticleActivityFilter;
 };
 
 export type PagedArticles = {
@@ -160,6 +162,23 @@ export function createNonFoodArticle(request: {
   return apiRequest<CreatedArticle>('/api/articles/non-food', {
     method: 'POST',
     body: JSON.stringify(request),
+  });
+}
+
+export function updateArticle(articleId: string, request: {
+  name: string;
+  priceExcludingTax: number;
+  allowedSaleModes: SaleMode[] | null;
+}) {
+  return apiRequest<void>(`/api/articles/${articleId}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  });
+}
+
+export function deactivateArticle(articleId: string) {
+  return apiRequest<void>(`/api/articles/${articleId}`, {
+    method: 'DELETE',
   });
 }
 

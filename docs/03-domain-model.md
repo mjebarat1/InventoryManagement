@@ -22,6 +22,8 @@ Propriétés métier attendues :
 
 La référence doit respecter le format EAN-13.
 
+La référence et le type d'article sont immuables après création. Le nom et le prix peuvent évoluer ; les modes de vente peuvent également évoluer pour un `FoodArticle`. Un article désactivé conserve ses buckets et mouvements mais ne peut plus recevoir d'approvisionnement, de vente ou d'inventaire.
+
 ---
 
 ## Référence EAN-13

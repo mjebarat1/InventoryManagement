@@ -16,6 +16,10 @@ namespace InventoryManagement.Infrastructure.Persistence.Configurations.Article
                 .HasMaxLength(200)
                 .IsRequired();
 
+            builder.Property(article => article.IsActive)
+                .HasDefaultValue(true)
+                .IsRequired();
+
             builder.OwnsOne(article => article.Reference, reference =>
             {
                 reference.Property(x => x.Value)

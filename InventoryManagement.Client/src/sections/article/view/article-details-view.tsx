@@ -11,6 +11,7 @@ import Table from '@mui/material/Table';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
 import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Collapse from '@mui/material/Collapse';
@@ -29,11 +30,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
 import InputAdornment from '@mui/material/InputAdornment';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useTranslate } from 'src/locales';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ApiError, recordSale, recordSupply, getArticleById, recordInventory, searchStockBuckets } from 'src/api';
+import { ApiError, recordSale, recordSupply, updateArticle, getArticleById, recordInventory, searchStockBuckets } from 'src/api';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -84,6 +86,12 @@ export function ArticleDetailsView() {
   const [inventoryComment, setInventoryComment] = useState('');
   const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [inventorySubmitting, setInventorySubmitting] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editSaleModes, setEditSaleModes] = useState<SaleMode[]>([]);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   const loadArticle = useCallback(async (signal?: AbortSignal) => {
     if (!id) return;
@@ -340,6 +348,61 @@ export function ArticleDetailsView() {
     }
   };
 
+  const openEditDialog = () => {
+    if (!article?.isActive) return;
+    setEditName(article.name);
+    setEditPrice(String(article.priceExcludingTax));
+    setEditSaleModes(article.allowedSaleModes);
+    setEditError(null);
+    setEditOpen(true);
+  };
+
+  const toggleEditSaleMode = (mode: SaleMode) => {
+    setEditSaleModes((current) => current.includes(mode)
+      ? current.filter((item) => item !== mode)
+      : [...current, mode]);
+  };
+
+  const submitEdit = async () => {
+    if (!id || !article) return;
+    const price = Number(editPrice);
+    if (!editName.trim()) {
+      setEditError(t('articleEdit.validation.name'));
+      return;
+    }
+    if (!Number.isFinite(price) || price < 0) {
+      setEditError(t('articleEdit.validation.price'));
+      return;
+    }
+    if (article.type === 'Food' && editSaleModes.length === 0) {
+      setEditError(t('articleEdit.validation.saleMode'));
+      return;
+    }
+
+    setEditSubmitting(true);
+    setEditError(null);
+    try {
+      await updateArticle(id, {
+        name: editName.trim(),
+        priceExcludingTax: price,
+        allowedSaleModes: article.type === 'Food' ? editSaleModes : null,
+      });
+      setEditOpen(false);
+      setNotification({ severity: 'success', message: t('articleEdit.success') });
+      try {
+        await loadArticle();
+      } catch {
+        setNotification({ severity: 'error', message: t('articleEdit.refreshError') });
+      }
+    } catch (caughtError) {
+      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      setEditError(message);
+      setNotification({ severity: 'error', message });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   if (!article && !error) {
     return <DashboardContent><Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box></DashboardContent>;
   }
@@ -387,14 +450,18 @@ export function ArticleDetailsView() {
           <Typography variant="h4">{article.name}</Typography>
           <Typography sx={{ color: 'rgba(255,255,255,0.78)' }}>{article.reference}</Typography>
         </Box>
+        <Button onClick={openEditDialog} disabled={!article.isActive} sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,0.5)' }} variant="outlined">{t('articleEdit.action')}</Button>
         <Button onClick={() => navigate('/articles')} sx={{ color: 'common.white', borderColor: 'rgba(255,255,255,0.5)' }} variant="outlined">{t('articleDetails.backToList')}</Button>
       </Box>
+
+      {!article.isActive && <Alert severity="warning" sx={{ mb: 3 }}>{t('articleDetails.inactiveWarning')}</Alert>}
 
       <Card sx={{ p: 3, mb: 3, borderLeft: 4, borderLeftColor: article.type === 'Food' ? 'success.main' : 'secondary.main' }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
           <Info label={t('articles.reference')} value={article.reference} />
           <Info label={t('articles.name')} value={article.name} />
           <Info label={t('articles.type')} value={t(`articleTypes.${article.type === 'Food' ? 'food' : 'nonFood'}`)} />
+          <Info label={t('articles.status')} value={t(`articleStatuses.${article.isActive ? 'active' : 'inactive'}`)} />
           <Info label={t('articles.priceExcludingTax')} value={formatMoney(article.priceExcludingTax, locale)} />
           <Box><Typography variant="caption" color="text.secondary">{t('articles.priceIncludingTax')}</Typography>{renderPrices((price) => price.priceIncludingTax, (value) => formatMoney(value, locale))}</Box>
           <Box><Typography variant="caption" color="text.secondary">{t('articles.vat')}</Typography>{renderPrices((price) => price.vatRate, (value) => formatVat(value, locale))}</Box>
@@ -409,9 +476,9 @@ export function ArticleDetailsView() {
       </Box>
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-        <Button variant="contained" onClick={openSupplyDialog}>{t('articleDetails.supply')}</Button>
-        <Button variant="contained" onClick={openSaleDialog}>{t('articleDetails.sale')}</Button>
-        <Button variant="contained" onClick={openInventoryDialog}>{t('articleDetails.inventory')}</Button>
+        <Button variant="contained" disabled={!article.isActive} onClick={openSupplyDialog}>{t('articleDetails.supply')}</Button>
+        <Button variant="contained" disabled={!article.isActive} onClick={openSaleDialog}>{t('articleDetails.sale')}</Button>
+        <Button variant="contained" disabled={!article.isActive} onClick={openInventoryDialog}>{t('articleDetails.inventory')}</Button>
       </Box>
 
       <Card sx={{ mb: 3, overflow: 'hidden' }}>
@@ -520,6 +587,28 @@ export function ArticleDetailsView() {
           <Button variant="contained" onClick={submitSupply} disabled={supplySubmitting}>
             {supplySubmitting ? t('common.loading') : t('supply.submit')}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={editOpen} onClose={() => !editSubmitting && setEditOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{t('articleEdit.title')}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gap: 3, pt: 1 }}>
+            {editError && <Alert severity="error">{editError}</Alert>}
+            <TextField required label={t('articles.name')} value={editName} onChange={(event) => setEditName(event.target.value)} />
+            <TextField required type="number" label={t('articles.priceExcludingTax')} value={editPrice} inputProps={{ min: 0, step: 0.01 }} onChange={(event) => setEditPrice(event.target.value)} />
+            {article.type === 'Food' && (
+              <Box>
+                <Typography variant="subtitle2">{t('articleCreate.allowedSaleModes')}</Typography>
+                <FormControlLabel control={<Checkbox checked={editSaleModes.includes('TakeAway')} onChange={() => toggleEditSaleMode('TakeAway')} />} label={t('saleModes.takeAway')} />
+                <FormControlLabel control={<Checkbox checked={editSaleModes.includes('OnSite')} onChange={() => toggleEditSaleMode('OnSite')} />} label={t('saleModes.onSite')} />
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditOpen(false)} disabled={editSubmitting}>{t('common.cancel')}</Button>
+          <Button variant="contained" onClick={submitEdit} disabled={editSubmitting}>{editSubmitting ? t('common.loading') : t('common.save')}</Button>
         </DialogActions>
       </Dialog>
 

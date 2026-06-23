@@ -43,7 +43,7 @@ public sealed class ArticleUseCaseTests
         var useCase = new SearchArticlesUseCase(new FakeArticleRepository());
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => useCase.ExecuteAsync(
-            new SearchArticlesQuery(1, 101, ArticleSortField.Reference, SortDirection.Asc, null, null, null)));
+            new SearchArticlesQuery(1, 101, ArticleSortField.Reference, SortDirection.Asc, null, null, ArticleActivityFilter.Active)));
     }
 
     [Fact]
@@ -141,6 +141,12 @@ public sealed class ArticleUseCaseTests
 
         public Task<Article?> GetByIdAsync(Guid articleId, CancellationToken cancellationToken = default)
             => Task.FromResult(ArticleToReturn);
+
+        public Task<Article?> GetForUpdateByIdAsync(Guid articleId, CancellationToken cancellationToken = default)
+            => Task.FromResult(ArticleToReturn);
+
+        public Task UpdateAsync(Article article, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
 
         public Task<ArticleSearchPage> SearchAsync(
             ArticleSearchCriteria criteria,

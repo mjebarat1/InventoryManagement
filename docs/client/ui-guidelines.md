@@ -76,7 +76,7 @@ Tout n’est pas obligatoire pour l’exercice.
 
 ## Parcours Articles implémenté
 
-La page Articles appelle la recherche avec une pagination configurable, limitée à 100 lignes, des filtres sur la référence, le nom et le type, ainsi qu'un tri contrôlé.
+La page Articles appelle la recherche avec une pagination configurable, limitée à 100 lignes, un champ unique recherchant dans le nom ou la référence, un filtre de type, un filtre actifs/désactivés/tous et un tri contrôlé.
 
 Le formulaire de création est unique et adapte les modes de vente au type sélectionné. La fiche article est une route autonome utilisée après création et depuis la grille. Les actions d'approvisionnement, de vente et d'inventaire sont actives.
 
@@ -87,6 +87,8 @@ L'action « Ajouter un approvisionnement » ouvre un dialog adaptatif : DLC pour
 L'action « Déclarer une vente » ouvre un dialog avec une quantité et, pour un article alimentaire, un mode limité aux modes autorisés. Le mode unique est présélectionné. Un succès actualise la fiche sans navigation ; une erreur, notamment un stock insuffisant, conserve le dialog ouvert et est affichée dans le formulaire et dans un snackbar.
 
 L'approvisionnement demande une référence de lot avec le préfixe fixe `ref-lot-` et une saisie de 13 chiffres. L'inventaire permet de sélectionner des lots existants et d'ajouter de nouveaux lots constatés. Son autocomplete recherche en base uniquement dans l'article courant, avec un debounce, à partir du neuvième chiffre saisi. Les écarts et totaux sont calculés dans l'interface pour le confort, mais le backend recalcule les quantités système.
+
+La fiche permet de modifier le nom, le prix HT et les modes Food. La grille permet de désactiver un article après confirmation. Les articles désactivés restent consultables via le filtre mais leurs actions métier et de modification sont désactivées.
 
 ## Identité visuelle
 

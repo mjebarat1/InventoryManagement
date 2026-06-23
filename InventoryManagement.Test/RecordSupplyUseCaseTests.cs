@@ -95,6 +95,22 @@ public sealed class RecordSupplyUseCaseTests
         Assert.Null(stockRepository.Movement);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_RejectsInactiveArticle()
+    {
+        var article = CreateFoodArticle();
+        article.Deactivate();
+        var useCase = CreateUseCase(article, new FakeStockMovementRepository());
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => useCase.ExecuteAsync(
+            new RecordSupplyCommand(
+                article.Id,
+                "ref-lot-0000000000009",
+                2,
+                new DateOnly(2026, 7, 15),
+                null)));
+    }
+
     private static FoodArticle CreateFoodArticle() => FoodArticle.Create(
         Ean13Reference.Create("1234567890123"),
         "Yaourt",
@@ -123,6 +139,8 @@ public sealed class RecordSupplyUseCaseTests
         public Task AddAsync(Article article, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<bool> ExistsByReferenceAsync(Ean13Reference reference, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<Article?> GetByIdAsync(Guid articleId, CancellationToken cancellationToken = default) => Task.FromResult(_article);
+        public Task<Article?> GetForUpdateByIdAsync(Guid articleId, CancellationToken cancellationToken = default) => Task.FromResult(_article);
+        public Task UpdateAsync(Article article, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<ArticleSearchPage> SearchAsync(ArticleSearchCriteria criteria, CancellationToken cancellationToken = default)
             => Task.FromResult(new ArticleSearchPage(Array.Empty<Article>(), 0));
     }

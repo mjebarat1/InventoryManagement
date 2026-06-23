@@ -161,6 +161,8 @@ La fiche article ne porte pas directement les quantités en stock.
 
 Les quantités sont calculées à partir des mouvements de stock et de leurs lignes.
 
+Un article peut être modifié uniquement pour son nom, son prix HT et, s'il est alimentaire, ses modes de vente. Sa référence EAN-13 et son type restent immuables. La suppression est logique via `IsActive` afin de conserver l'intégralité de l'historique de stock.
+
 ---
 
 ## TVA
@@ -723,6 +725,8 @@ La migration `AddSaleModeToSaleMovement` ajoute le mode de vente nullable aux mo
 
 La migration `AddStockBucketReferenceAndInventoryComment` ajoute la référence métier globale des buckets, rétroalimente les buckets existants avec des références séquentielles, crée l'index unique et ajoute le commentaire optionnel des inventaires.
 
+La migration `AddArticleActivityStatus` ajoute le statut actif des articles. Les données existantes sont actives par défaut.
+
 ### Appliquer les migrations
 
 ```bash
@@ -946,6 +950,8 @@ Codex a également été utilisé pour certaines tâches d’implémentation, no
 Le scénario de vente a notamment été assisté pour l'allocation FEFO/FIFO, la persistance des lignes négatives, l'intégration API/client et la préparation des tests. Les règles de refus atomique sur stock insuffisant et les arbitrages d'allocation ont été validés humainement.
 
 Le scénario d'inventaire et la référence métier des lots ont été assistés pour la modélisation, la migration des données existantes, les contrats API, l'interface et les tests. Le format, l'unicité globale et le caractère partiel de l'inventaire ont été validés humainement.
+
+Le CRUD Article a été assisté pour la recherche unifiée, les invariants de modification et la désactivation logique. Le choix de conserver l'historique plutôt que d'effectuer une suppression physique a été validé humainement après analyse des relations EF.
 
 Le code final a été relu, adapté et organisé manuellement.
 
