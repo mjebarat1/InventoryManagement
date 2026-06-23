@@ -43,11 +43,10 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+// Je laisse swagger ouvert pour le moment
+app.UseSwagger();
+app.UseSwaggerUI();
 
 if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
