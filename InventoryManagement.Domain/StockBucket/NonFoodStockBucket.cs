@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InventoryManagement.Domain.Shared.ValueObjects;
 
 namespace InventoryManagement.Domain.StockBucket
 {
@@ -16,15 +17,21 @@ namespace InventoryManagement.Domain.StockBucket
             // EF Core
         }
 
-        private NonFoodStockBucket(Guid articleId, PackagingLevel packagingLevel)
-            : base(articleId)
+        private NonFoodStockBucket(
+            Guid articleId,
+            StockBucketReference reference,
+            PackagingLevel packagingLevel)
+            : base(articleId, reference)
         {
             PackagingLevel = packagingLevel;
         }
 
-        public static NonFoodStockBucket Create(Guid articleId, PackagingLevel packagingLevel)
+        public static NonFoodStockBucket Create(
+            Guid articleId,
+            StockBucketReference reference,
+            PackagingLevel packagingLevel)
         {
-            return new NonFoodStockBucket(articleId, packagingLevel);
+            return new NonFoodStockBucket(articleId, reference, packagingLevel);
         }
 
         public override bool IsSellable(DateOnly today)

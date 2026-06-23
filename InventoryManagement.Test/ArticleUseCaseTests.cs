@@ -65,8 +65,8 @@ public sealed class ArticleUseCaseTests
             Ean13Reference.Create("1234567890123"),
             "Casque audio",
             Money.FromDecimal(99.99m));
-        var sellableBucket = NonFoodStockBucket.Create(article.Id, PackagingLevel.New);
-        var unsellableBucket = NonFoodStockBucket.Create(article.Id, PackagingLevel.Unsellable);
+        var sellableBucket = NonFoodStockBucket.Create(article.Id, Reference(1), PackagingLevel.New);
+        var unsellableBucket = NonFoodStockBucket.Create(article.Id, Reference(2), PackagingLevel.Unsellable);
         var movements = new StockMovement[]
         {
             SupplyMovement.Create(article.Id, sellableBucket.Id, Quantity.CreatePositive(10)),
@@ -99,8 +99,8 @@ public sealed class ArticleUseCaseTests
             "Yaourt",
             Money.FromDecimal(2.50m),
             new[] { SaleMode.TakeAway });
-        var expiredBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 6, 22));
-        var emptyBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 7, 1));
+        var expiredBucket = FoodStockBucket.Create(article.Id, Reference(3), new DateOnly(2026, 6, 22));
+        var emptyBucket = FoodStockBucket.Create(article.Id, Reference(4), new DateOnly(2026, 7, 1));
         var snapshot = new ArticleStockSnapshot(
             article,
             new StockBucket[] { expiredBucket, emptyBucket },
@@ -120,6 +120,9 @@ public sealed class ArticleUseCaseTests
         Assert.Contains(result.Buckets, bucket => bucket.Status == InventoryManagement.Application.Articles.Shared.StockBucketStatus.Expired);
         Assert.Contains(result.Buckets, bucket => bucket.Status == InventoryManagement.Application.Articles.Shared.StockBucketStatus.Empty);
     }
+
+    private static StockBucketReference Reference(int value) =>
+        StockBucketReference.Create($"ref-lot-{value:0000000000000}");
 
     private sealed class FakeArticleRepository : IArticleRepository
     {

@@ -79,6 +79,10 @@ Le module Articles expose également `recordSupply`. Après une création réuss
 
 Le module Articles expose `recordSale` pour `POST /api/articles/{id}/sales`. Après succès, le client recharge la fiche courante. Les choix de buckets, la disponibilité, la TVA et les montants restent calculés et validés par le backend.
 
+Le module Articles expose `recordInventory` pour `POST /api/articles/{id}/inventories`. Il envoie les quantités constatées des buckets sélectionnés et les caractéristiques des nouveaux lots. Les quantités système affichées ne sont jamais envoyées comme source de vérité.
+
+L'autocomplete d'inventaire utilise `searchStockBuckets` et `POST /api/articles/{id}/stock-buckets/search`. Il attend neuf chiffres, applique un debounce de 300 ms et annule la requête précédente lorsque la saisie évolue.
+
 ### CORS
 
 Le backend applique la policy `ClientCors`. En développement local, elle autorise le client Vite servi depuis `http://localhost:3039` ou `http://127.0.0.1:3039`.

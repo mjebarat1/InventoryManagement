@@ -16,5 +16,10 @@ namespace InventoryManagement.Application.Ports.Out
         Task AddSaleAsync(
             Domain.StockMovement.SaleMovement movement,
             CancellationToken cancellationToken = default);
+
+        Task AddInventoryAsync(
+            IReadOnlyCollection<Domain.StockBucket.StockBucket> newBuckets,
+            Domain.StockMovement.InventoryMovement movement,
+            CancellationToken cancellationToken = default);
     }
 }

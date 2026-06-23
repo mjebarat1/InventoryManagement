@@ -50,7 +50,7 @@
     "stockBuckets": "Stock lots", "noBuckets": "No stock lot for this article.",
     "physicalQuantity": "Physical quantity", "sellableQuantity": "Sellable quantity", "status": "Status",
     "movements": "Stock movements", "date": "Date", "movementType": "Movement type",
-    "quantity": "Quantity", "quantityDelta": "Change", "expirationDate": "Expiration date", "packaging": "Packaging",
+    "quantity": "Quantity", "quantityDelta": "Change", "bucketReference": "Lot reference", "expirationDate": "Expiration date", "packaging": "Packaging",
     "impactedBuckets": "Impacted lots", "bucket": "Lot", "quantityBefore": "Quantity before", "quantityAfter": "Quantity after",
     "toggleMovementLines": "Show or hide movement lines",
     "noMovements": "No stock movement for this article.",
@@ -58,6 +58,7 @@
   },
   "supply": {
     "title": "Add a supply",
+    "reference": "Lot reference",
     "quantity": "Supplied quantity",
     "expirationDate": "Expiration date",
     "packaging": "Packaging level",
@@ -66,7 +67,40 @@
     "refreshError": "The supply was added, but the article details could not be refreshed.",
     "validation": {
       "quantity": "The quantity must be a strictly positive integer.",
+      "reference": "The lot reference must contain exactly 13 digits after ref-lot-.",
       "expirationDate": "The expiration date is required."
+    }
+  },
+  "inventory": {
+    "title": "Take inventory",
+    "searchBucket": "Search by lot reference",
+    "searchMinimum": "Enter at least 9 digits to start searching.",
+    "noSearchResults": "No lot found.",
+    "add": "Add",
+    "addNewBucket": "Add a newly counted lot",
+    "systemQuantity": "System quantity",
+    "countedQuantity": "Counted quantity",
+    "difference": "Difference",
+    "systemTotal": "System total",
+    "countedTotal": "Counted total",
+    "totalDifference": "Total difference",
+    "comment": "Comment",
+    "newBucket": "New lot",
+    "remove": "Remove lot",
+    "noExistingBuckets": "There is no existing lot for this article. You can add a newly counted lot.",
+    "noSelectedBuckets": "No lot selected for inventory.",
+    "submit": "Save inventory",
+    "success": "Inventory recorded successfully.",
+    "refreshError": "The inventory was recorded, but the article details could not be refreshed.",
+    "validation": {
+      "noSelection": "Select at least one lot or add a newly counted lot.",
+      "duplicateBucket": "This lot is already included in the inventory.",
+      "countedQuantity": "Each counted quantity must be an integer greater than or equal to zero.",
+      "reference": "Each new reference must contain exactly 13 digits after ref-lot-.",
+      "duplicateReference": "A new lot reference already exists or was entered more than once.",
+      "newQuantity": "A new lot quantity must be a strictly positive integer.",
+      "expirationDate": "The expiration date is required for each new food lot.",
+      "noDifference": "No inventory difference was found."
     }
   },
   "sale": {

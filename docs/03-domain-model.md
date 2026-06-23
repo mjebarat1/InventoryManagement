@@ -115,6 +115,8 @@ S’il n’existe aucun inventaire, le stock peut être calculé depuis le débu
 
 Cette hypothèse doit être confirmée ou documentée.
 
+Chaque `StockBucket` porte un `StockBucketReference` obligatoire et globalement unique au format `ref-lot-` suivi exactement de 13 chiffres. Cette référence identifie le lot, tandis que `Article.Reference` identifie le produit.
+
 ---
 
 ## Mouvement de stock
@@ -146,6 +148,14 @@ La DLC ou le packaging appartient exclusivement au bucket. Le mouvement global n
 Une vente consomme une ou plusieurs quantités de buckets au moyen de lignes négatives. Pour un article alimentaire, seuls les buckets non expirés sont utilisés, dans l'ordre FEFO (DLC la plus proche puis date de création). Pour un article non alimentaire, seuls les buckets `New` et `Refurbished` sont utilisés, dans l'ordre de création. Les buckets `Unsellable` ne sont jamais consommés.
 
 La vente est atomique : si le stock vendable total est inférieur à la quantité demandée, elle est entièrement refusée. Le `SaleMovement` conserve le prix unitaire HT, le prix unitaire TTC, le taux de TVA et, pour un article alimentaire, le mode de vente appliqué. La quantité vendue et les totaux sont calculés depuis les `StockMovementLine.QuantityDelta` négatifs.
+
+---
+
+## Inventaire
+
+Un inventaire est partiel : il porte sur les buckets explicitement sélectionnés. Le backend recalcule leur quantité courante depuis toutes les `StockMovementLine.QuantityDelta`, puis crée uniquement les lignes dont le delta est non nul.
+
+Un inventaire peut également constater un nouveau lot. Le bucket est créé avec sa référence, sa DLC ou son packaging, et une ligne positive ayant `QuantityBefore = 0`. Les nouveaux buckets et l'unique `InventoryMovement` sont persistés atomiquement. Un inventaire sans aucun écart ni nouveau bucket est refusé. Le commentaire global optionnel appartient à `InventoryMovement`.
 
 ---
 

@@ -33,5 +33,15 @@ namespace InventoryManagement.Infrastructure.Persistence
             await _context.StockMovements.AddAsync(movement, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task AddInventoryAsync(
+            IReadOnlyCollection<Domain.StockBucket.StockBucket> newBuckets,
+            Domain.StockMovement.InventoryMovement movement,
+            CancellationToken cancellationToken = default)
+        {
+            await _context.StockBuckets.AddRangeAsync(newBuckets, cancellationToken);
+            await _context.StockMovements.AddAsync(movement, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

@@ -50,7 +50,7 @@
     "stockBuckets": "Lots de stock", "noBuckets": "Aucun lot de stock pour cet article.",
     "physicalQuantity": "Quantité physique", "sellableQuantity": "Quantité vendable", "status": "Statut",
     "movements": "Mouvements de stock", "date": "Date", "movementType": "Type de mouvement",
-    "quantity": "Quantité", "quantityDelta": "Variation", "expirationDate": "DLC", "packaging": "Packaging",
+    "quantity": "Quantité", "quantityDelta": "Variation", "bucketReference": "Référence du lot", "expirationDate": "DLC", "packaging": "Packaging",
     "impactedBuckets": "Lots impactés", "bucket": "Lot", "quantityBefore": "Quantité avant", "quantityAfter": "Quantité après",
     "toggleMovementLines": "Afficher ou masquer les lignes du mouvement",
     "noMovements": "Aucun mouvement de stock pour cet article.",
@@ -58,6 +58,7 @@
   },
   "supply": {
     "title": "Ajouter un approvisionnement",
+    "reference": "Référence du lot",
     "quantity": "Quantité approvisionnée",
     "expirationDate": "DLC",
     "packaging": "Niveau de packaging",
@@ -66,7 +67,40 @@
     "refreshError": "L’approvisionnement a été ajouté, mais la fiche n’a pas pu être actualisée.",
     "validation": {
       "quantity": "La quantité doit être un entier strictement positif.",
+      "reference": "La référence du lot doit contenir exactement 13 chiffres après ref-lot-.",
       "expirationDate": "La DLC est obligatoire."
+    }
+  },
+  "inventory": {
+    "title": "Faire un inventaire",
+    "searchBucket": "Rechercher une référence de lot",
+    "searchMinimum": "Saisissez au moins 9 chiffres pour lancer la recherche.",
+    "noSearchResults": "Aucun lot trouvé.",
+    "add": "Ajouter",
+    "addNewBucket": "Ajouter un nouveau lot constaté",
+    "systemQuantity": "Quantité système",
+    "countedQuantity": "Quantité constatée",
+    "difference": "Écart",
+    "systemTotal": "Total système",
+    "countedTotal": "Total constaté",
+    "totalDifference": "Écart total",
+    "comment": "Commentaire",
+    "newBucket": "Nouveau lot",
+    "remove": "Retirer le lot",
+    "noExistingBuckets": "Aucun lot existant pour cet article. Vous pouvez ajouter un nouveau lot constaté.",
+    "noSelectedBuckets": "Aucun lot sélectionné pour l’inventaire.",
+    "submit": "Enregistrer l’inventaire",
+    "success": "Inventaire enregistré avec succès.",
+    "refreshError": "L’inventaire a été enregistré, mais la fiche n’a pas pu être actualisée.",
+    "validation": {
+      "noSelection": "Sélectionnez au moins un lot ou ajoutez un nouveau lot constaté.",
+      "duplicateBucket": "Ce lot est déjà présent dans l’inventaire.",
+      "countedQuantity": "Chaque quantité constatée doit être un entier supérieur ou égal à zéro.",
+      "reference": "Chaque nouvelle référence doit contenir exactement 13 chiffres après ref-lot-.",
+      "duplicateReference": "Une référence de nouveau lot existe déjà ou a été saisie plusieurs fois.",
+      "newQuantity": "La quantité d’un nouveau lot doit être un entier strictement positif.",
+      "expirationDate": "La DLC est obligatoire pour chaque nouveau lot alimentaire.",
+      "noDifference": "Aucun écart d’inventaire n’a été constaté."
     }
   },
   "sale": {

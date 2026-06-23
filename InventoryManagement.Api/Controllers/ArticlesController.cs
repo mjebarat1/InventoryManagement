@@ -5,6 +5,8 @@ using InventoryManagement.Application.Articles.GetArticleById;
 using InventoryManagement.Application.Articles.SearchArticles;
 using InventoryManagement.Application.Articles.RecordSupply;
 using InventoryManagement.Application.Articles.RecordSale;
+using InventoryManagement.Application.Articles.RecordInventory;
+using InventoryManagement.Application.Articles.SearchStockBuckets;
 using InventoryManagement.Application.Ports.In;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +23,8 @@ namespace InventoryManagement.Api.Controllers
         private readonly IGetArticleByIdUseCase _getArticleByIdUseCase;
         private readonly IRecordSupplyUseCase _recordSupplyUseCase;
         private readonly IRecordSaleUseCase _recordSaleUseCase;
+        private readonly IRecordInventoryUseCase _recordInventoryUseCase;
+        private readonly ISearchStockBucketsUseCase _searchStockBucketsUseCase;
 
         public ArticlesController(
             ICreateFoodArticleUseCase createFoodArticleUseCase,
@@ -28,7 +32,9 @@ namespace InventoryManagement.Api.Controllers
             ISearchArticlesUseCase searchArticlesUseCase,
             IGetArticleByIdUseCase getArticleByIdUseCase,
             IRecordSupplyUseCase recordSupplyUseCase,
-            IRecordSaleUseCase recordSaleUseCase)
+            IRecordSaleUseCase recordSaleUseCase,
+            IRecordInventoryUseCase recordInventoryUseCase,
+            ISearchStockBucketsUseCase searchStockBucketsUseCase)
         {
             _createFoodArticleUseCase = createFoodArticleUseCase;
             _createNonFoodArticleUseCase = createNonFoodArticleUseCase;
@@ -36,6 +42,8 @@ namespace InventoryManagement.Api.Controllers
             _getArticleByIdUseCase = getArticleByIdUseCase;
             _recordSupplyUseCase = recordSupplyUseCase;
             _recordSaleUseCase = recordSaleUseCase;
+            _recordInventoryUseCase = recordInventoryUseCase;
+            _searchStockBucketsUseCase = searchStockBucketsUseCase;
         }
 
         [HttpPost("food")]
@@ -112,6 +120,7 @@ namespace InventoryManagement.Api.Controllers
             var result = await _recordSupplyUseCase.ExecuteAsync(
                 new RecordSupplyCommand(
                     id,
+                    request.StockBucketReference,
                     request.Quantity,
                     request.ExpirationDate,
                     request.PackagingLevel),
@@ -143,6 +152,44 @@ namespace InventoryManagement.Api.Controllers
                     movementId = result.MovementId,
                     soldQuantity = result.SoldQuantity
                 });
+        }
+
+        [HttpPost("{id:guid}/inventories")]
+        public async Task<IActionResult> RecordInventory(
+            Guid id,
+            [FromBody] RecordInventoryRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _recordInventoryUseCase.ExecuteAsync(
+                new RecordInventoryCommand(
+                    id,
+                    request.Comment,
+                    (request.ExistingBuckets ?? []).Select(item => new RecordInventoryExistingBucketCommand(
+                        item.StockBucketId,
+                        item.CountedQuantity)).ToArray(),
+                    (request.NewBuckets ?? []).Select(item => new RecordInventoryNewBucketCommand(
+                        item.Reference,
+                        item.CountedQuantity,
+                        item.ExpirationDate,
+                        item.PackagingLevel)).ToArray()),
+                cancellationToken);
+
+            return result is null
+                ? NotFound()
+                : StatusCode(StatusCodes.Status201Created, result);
+        }
+
+        [HttpPost("{id:guid}/stock-buckets/search")]
+        public async Task<IActionResult> SearchStockBuckets(
+            Guid id,
+            [FromBody] SearchStockBucketsRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await _searchStockBucketsUseCase.ExecuteAsync(
+                new SearchStockBucketsQuery(id, request.ReferenceDigits),
+                cancellationToken);
+
+            return Ok(result);
         }
     }
 }

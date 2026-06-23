@@ -15,15 +15,16 @@ public sealed class RecordSupplyUseCaseTests
     {
         var article = CreateFoodArticle();
         var stockRepository = new FakeStockMovementRepository();
-        var useCase = new RecordSupplyUseCase(new FakeArticleRepository(article), stockRepository);
+        var useCase = CreateUseCase(article, stockRepository);
         var expirationDate = new DateOnly(2026, 7, 15);
 
         var result = await useCase.ExecuteAsync(
-            new RecordSupplyCommand(article.Id, 8, expirationDate, null));
+            new RecordSupplyCommand(article.Id, "ref-lot-0000000000001", 8, expirationDate, null));
 
         Assert.NotNull(result);
         var bucket = Assert.IsType<FoodStockBucket>(stockRepository.Bucket);
         Assert.Equal(expirationDate, bucket.ExpirationDate);
+        Assert.Equal("ref-lot-0000000000001", bucket.Reference.Value);
         var line = Assert.Single(stockRepository.Movement!.Lines);
         Assert.Equal(8, line.QuantityDelta);
         Assert.Equal(0, line.QuantityBefore!.Value);
@@ -35,10 +36,10 @@ public sealed class RecordSupplyUseCaseTests
     {
         var article = CreateNonFoodArticle();
         var stockRepository = new FakeStockMovementRepository();
-        var useCase = new RecordSupplyUseCase(new FakeArticleRepository(article), stockRepository);
+        var useCase = CreateUseCase(article, stockRepository);
 
         await useCase.ExecuteAsync(
-            new RecordSupplyCommand(article.Id, 3, null, PackagingLevel.Refurbished));
+            new RecordSupplyCommand(article.Id, "ref-lot-0000000000002", 3, null, PackagingLevel.Refurbished));
 
         var bucket = Assert.IsType<NonFoodStockBucket>(stockRepository.Bucket);
         Assert.Equal(PackagingLevel.Refurbished, bucket.PackagingLevel);
@@ -49,28 +50,22 @@ public sealed class RecordSupplyUseCaseTests
     public async Task ExecuteAsync_RejectsNonPositiveQuantity()
     {
         var article = CreateFoodArticle();
-        var useCase = new RecordSupplyUseCase(
-            new FakeArticleRepository(article),
-            new FakeStockMovementRepository());
+        var useCase = CreateUseCase(article, new FakeStockMovementRepository());
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => useCase.ExecuteAsync(
-            new RecordSupplyCommand(article.Id, 0, new DateOnly(2026, 7, 15), null)));
+            new RecordSupplyCommand(article.Id, "ref-lot-0000000000003", 0, new DateOnly(2026, 7, 15), null)));
     }
 
     [Fact]
     public async Task ExecuteAsync_RejectsMissingTypeSpecificData()
     {
-        var foodUseCase = new RecordSupplyUseCase(
-            new FakeArticleRepository(CreateFoodArticle()),
-            new FakeStockMovementRepository());
-        var nonFoodUseCase = new RecordSupplyUseCase(
-            new FakeArticleRepository(CreateNonFoodArticle()),
-            new FakeStockMovementRepository());
+        var foodUseCase = CreateUseCase(CreateFoodArticle(), new FakeStockMovementRepository());
+        var nonFoodUseCase = CreateUseCase(CreateNonFoodArticle(), new FakeStockMovementRepository());
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => foodUseCase.ExecuteAsync(
-            new RecordSupplyCommand(Guid.NewGuid(), 2, null, null)));
+            new RecordSupplyCommand(Guid.NewGuid(), "ref-lot-0000000000004", 2, null, null)));
         await Assert.ThrowsAsync<BusinessRuleException>(() => nonFoodUseCase.ExecuteAsync(
-            new RecordSupplyCommand(Guid.NewGuid(), 2, null, null)));
+            new RecordSupplyCommand(Guid.NewGuid(), "ref-lot-0000000000005", 2, null, null)));
     }
 
     [Fact]
@@ -78,27 +73,23 @@ public sealed class RecordSupplyUseCaseTests
     {
         var foodArticle = CreateFoodArticle();
         var nonFoodArticle = CreateNonFoodArticle();
-        var foodUseCase = new RecordSupplyUseCase(
-            new FakeArticleRepository(foodArticle),
-            new FakeStockMovementRepository());
-        var nonFoodUseCase = new RecordSupplyUseCase(
-            new FakeArticleRepository(nonFoodArticle),
-            new FakeStockMovementRepository());
+        var foodUseCase = CreateUseCase(foodArticle, new FakeStockMovementRepository());
+        var nonFoodUseCase = CreateUseCase(nonFoodArticle, new FakeStockMovementRepository());
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => foodUseCase.ExecuteAsync(
-            new RecordSupplyCommand(foodArticle.Id, 2, new DateOnly(2026, 7, 15), PackagingLevel.New)));
+            new RecordSupplyCommand(foodArticle.Id, "ref-lot-0000000000006", 2, new DateOnly(2026, 7, 15), PackagingLevel.New)));
         await Assert.ThrowsAsync<BusinessRuleException>(() => nonFoodUseCase.ExecuteAsync(
-            new RecordSupplyCommand(nonFoodArticle.Id, 2, new DateOnly(2026, 7, 15), PackagingLevel.New)));
+            new RecordSupplyCommand(nonFoodArticle.Id, "ref-lot-0000000000007", 2, new DateOnly(2026, 7, 15), PackagingLevel.New)));
     }
 
     [Fact]
     public async Task ExecuteAsync_ReturnsNullWhenArticleDoesNotExist()
     {
         var stockRepository = new FakeStockMovementRepository();
-        var useCase = new RecordSupplyUseCase(new FakeArticleRepository(null), stockRepository);
+        var useCase = CreateUseCase(null, stockRepository);
 
         var result = await useCase.ExecuteAsync(
-            new RecordSupplyCommand(Guid.NewGuid(), 2, null, PackagingLevel.New));
+            new RecordSupplyCommand(Guid.NewGuid(), "ref-lot-0000000000008", 2, null, PackagingLevel.New));
 
         Assert.Null(result);
         Assert.Null(stockRepository.Movement);
@@ -114,6 +105,11 @@ public sealed class RecordSupplyUseCaseTests
         Ean13Reference.Create("9876543210123"),
         "Casque",
         Money.FromDecimal(99.99m));
+
+    private static RecordSupplyUseCase CreateUseCase(Article? article, FakeStockMovementRepository repository) => new(
+        new FakeArticleRepository(article),
+        repository,
+        new FakeStockBucketRepository());
 
     private sealed class FakeArticleRepository : IArticleRepository
     {
@@ -148,5 +144,24 @@ public sealed class RecordSupplyUseCaseTests
 
         public Task AddSaleAsync(SaleMovement movement, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task AddInventoryAsync(
+            IReadOnlyCollection<StockBucket> newBuckets,
+            InventoryMovement movement,
+            CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
+
+    private sealed class FakeStockBucketRepository : IStockBucketRepository
+    {
+        public Task<bool> ExistsByReferenceAsync(
+            StockBucketReference reference,
+            CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<IReadOnlyCollection<StockBucketQuantitySnapshot>> SearchByReferencePrefixAsync(
+            Guid articleId,
+            string referencePrefix,
+            int maximumResults,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyCollection<StockBucketQuantitySnapshot>>([]);
     }
 }

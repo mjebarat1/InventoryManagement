@@ -16,8 +16,8 @@ public sealed class RecordSaleUseCaseTests
     public async Task ExecuteAsync_AllocatesFoodBucketsInFefoOrder()
     {
         var article = CreateFoodArticle(SaleMode.TakeAway, SaleMode.OnSite);
-        var laterBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 7, 10));
-        var soonerBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 6, 30));
+        var laterBucket = FoodStockBucket.Create(article.Id, Reference(1), new DateOnly(2026, 7, 10));
+        var soonerBucket = FoodStockBucket.Create(article.Id, Reference(2), new DateOnly(2026, 6, 30));
         var snapshot = CreateSnapshot(article, (laterBucket, 10), (soonerBucket, 4));
         var repository = new FakeStockMovementRepository();
         var useCase = CreateUseCase(snapshot, repository);
@@ -48,8 +48,8 @@ public sealed class RecordSaleUseCaseTests
     public async Task ExecuteAsync_RejectsInsufficientSellableStockWithoutPersistingSale()
     {
         var article = CreateFoodArticle(SaleMode.TakeAway);
-        var sellableBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 6, 30));
-        var expiredBucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 6, 22));
+        var sellableBucket = FoodStockBucket.Create(article.Id, Reference(3), new DateOnly(2026, 6, 30));
+        var expiredBucket = FoodStockBucket.Create(article.Id, Reference(4), new DateOnly(2026, 6, 22));
         var repository = new FakeStockMovementRepository();
         var useCase = CreateUseCase(
             CreateSnapshot(article, (sellableBucket, 3), (expiredBucket, 20)),
@@ -66,7 +66,7 @@ public sealed class RecordSaleUseCaseTests
     public async Task ExecuteAsync_RejectsUnauthorizedFoodSaleMode()
     {
         var article = CreateFoodArticle(SaleMode.TakeAway);
-        var bucket = FoodStockBucket.Create(article.Id, new DateOnly(2026, 6, 30));
+        var bucket = FoodStockBucket.Create(article.Id, Reference(5), new DateOnly(2026, 6, 30));
         var useCase = CreateUseCase(
             CreateSnapshot(article, (bucket, 3)),
             new FakeStockMovementRepository());
@@ -82,8 +82,8 @@ public sealed class RecordSaleUseCaseTests
             Ean13Reference.Create("9876543210123"),
             "Casque",
             Money.FromDecimal(100m));
-        var unsellable = NonFoodStockBucket.Create(article.Id, PackagingLevel.Unsellable);
-        var refurbished = NonFoodStockBucket.Create(article.Id, PackagingLevel.Refurbished);
+        var unsellable = NonFoodStockBucket.Create(article.Id, Reference(6), PackagingLevel.Unsellable);
+        var refurbished = NonFoodStockBucket.Create(article.Id, Reference(7), PackagingLevel.Refurbished);
         var repository = new FakeStockMovementRepository();
         var useCase = CreateUseCase(
             CreateSnapshot(article, (unsellable, 50), (refurbished, 2)),
@@ -121,6 +121,9 @@ public sealed class RecordSaleUseCaseTests
         "Yaourt",
         Money.FromDecimal(2.50m),
         saleModes);
+
+    private static StockBucketReference Reference(int value) =>
+        StockBucketReference.Create($"ref-lot-{value:0000000000000}");
 
     private static ArticleStockSnapshot CreateSnapshot(
         Article article,
@@ -172,6 +175,11 @@ public sealed class RecordSaleUseCaseTests
             Sale = movement;
             return Task.CompletedTask;
         }
+
+        public Task AddInventoryAsync(
+            IReadOnlyCollection<StockBucket> newBuckets,
+            InventoryMovement movement,
+            CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class FakeClock : IClock

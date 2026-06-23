@@ -17,11 +17,13 @@ public sealed record StockMovementResult(
     decimal? VatRate,
     decimal? TotalExcludingTax,
     decimal? TotalIncludingTax,
+    string? Comment,
     IReadOnlyCollection<StockMovementLineResult> Lines);
 
 public sealed record StockMovementLineResult(
     Guid Id,
     Guid StockBucketId,
+    string StockBucketReference,
     ArticleKind BucketType,
     DateOnly? ExpirationDate,
     PackagingLevel? PackagingLevel,
@@ -31,6 +33,7 @@ public sealed record StockMovementLineResult(
 
 public sealed record StockBucketResult(
     Guid Id,
+    string Reference,
     DateTime CreatedAt,
     ArticleKind Type,
     DateOnly? ExpirationDate,

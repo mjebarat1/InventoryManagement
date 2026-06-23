@@ -78,6 +78,8 @@ Ajouter ici les endpoints existants.
 | GET | `/api/articles/{id}` | Consulte une fiche article et ses mouvements | Implémenté |
 | POST | `/api/articles/{id}/supplies` | Enregistre un approvisionnement | Implémenté |
 | POST | `/api/articles/{id}/sales` | Enregistre une vente | Implémenté |
+| POST | `/api/articles/{id}/inventories` | Enregistre un inventaire partiel | Implémenté |
+| POST | `/api/articles/{id}/stock-buckets/search` | Recherche lazy des lots de l'article | Implémenté |
 
 ### Création d'article
 
@@ -123,6 +125,7 @@ Crée un nouveau bucket, un `SupplyMovement` et une ligne positive dans une seul
 
 ```json
 {
+  "stockBucketReference": "ref-lot-0000000000042",
   "quantity": 10,
   "expirationDate": "2026-07-15",
   "packagingLevel": null
@@ -130,6 +133,7 @@ Crée un nouveau bucket, un `SupplyMovement` et une ligne positive dans une seul
 ```
 
 - `quantity` est obligatoire et strictement positive ;
+- `stockBucketReference` est obligatoire, globalement unique et respecte `ref-lot-` suivi de 13 chiffres ;
 - `expirationDate` est obligatoire uniquement pour un article Food ;
 - `packagingLevel` est obligatoire uniquement pour un article NonFood ;
 - chaque approvisionnement crée un nouveau bucket ;
@@ -155,6 +159,37 @@ Retourne `201 Created` avec `movementId` et `bucketId`, `404 Not Found` si l'art
 - un stock vendable insuffisant refuse toute la vente avec `400 Bad Request`.
 
 Retourne `201 Created` avec `movementId` et `soldQuantity`, ou `404 Not Found` si l'article n'existe pas.
+
+### POST /api/articles/{id}/inventories
+
+```json
+{
+  "comment": "Inventaire mensuel",
+  "existingBuckets": [
+    { "stockBucketId": "00000000-0000-0000-0000-000000000000", "countedQuantity": 8 }
+  ],
+  "newBuckets": [
+    {
+      "reference": "ref-lot-0000000000043",
+      "countedQuantity": 3,
+      "expirationDate": "2026-08-15",
+      "packagingLevel": null
+    }
+  ]
+}
+```
+
+L'inventaire peut être partiel. Le backend recalcule les quantités système depuis les lignes de mouvements. Les lots existants ne produisent une ligne que si leur quantité constatée diffère. Les nouveaux lots produisent une ligne positive dans le même `InventoryMovement`. Les buckets inconnus, dupliqués, les références invalides ou existantes et un inventaire sans écart sont refusés avec `400 Bad Request`.
+
+### POST /api/articles/{id}/stock-buckets/search
+
+```json
+{
+  "referenceDigits": "000000000"
+}
+```
+
+La recherche est limitée aux buckets de l'article courant, accepte entre 9 et 13 chiffres après le préfixe fixe `ref-lot-`, effectue une recherche par préfixe et retourne au maximum 20 résultats. Les quantités et statuts retournés sont calculés côté backend.
 
 ### Stock
 

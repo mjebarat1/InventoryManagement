@@ -4,6 +4,7 @@ namespace InventoryManagement.Application.Articles.RecordSupply;
 
 public sealed record RecordSupplyCommand(
     Guid ArticleId,
+    string StockBucketReference,
     int Quantity,
     DateOnly? ExpirationDate,
     PackagingLevel? PackagingLevel);

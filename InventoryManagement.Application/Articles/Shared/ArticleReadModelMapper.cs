@@ -86,11 +86,12 @@ internal static class ArticleReadModelMapper
         .SelectMany(movement => movement.Lines)
         .Sum(line => line.QuantityDelta);
 
-    private static StockBucketResult ToBucket(StockBucket bucket, int physicalQuantity, DateOnly today)
+    internal static StockBucketResult ToBucket(StockBucket bucket, int physicalQuantity, DateOnly today)
     {
         var status = GetBucketStatus(bucket, physicalQuantity, today);
         return new StockBucketResult(
             bucket.Id,
+            bucket.Reference.Value,
             bucket.CreatedAt,
             GetBucketKind(bucket),
             bucket is FoodStockBucket foodBucket ? foodBucket.ExpirationDate : null,
@@ -121,6 +122,7 @@ internal static class ArticleReadModelMapper
             return new StockMovementLineResult(
                 line.Id,
                 line.StockBucketId,
+                bucket.Reference.Value,
                 GetBucketKind(bucket),
                 bucket is FoodStockBucket foodBucket ? foodBucket.ExpirationDate : null,
                 bucket is NonFoodStockBucket nonFoodBucket ? nonFoodBucket.PackagingLevel : null,
@@ -152,6 +154,7 @@ internal static class ArticleReadModelMapper
             sale?.VatRate.Value,
             sale is null ? null : soldQuantity * sale.UnitPriceExcludingTax.Amount,
             sale is null ? null : soldQuantity * sale.UnitPriceIncludingTax.Amount,
+            (movement as InventoryMovement)?.Comment,
             lines);
     }
 }

@@ -33,12 +33,14 @@ export type StockMovement = {
   vatRate: number | null;
   totalExcludingTax: number | null;
   totalIncludingTax: number | null;
+  comment: string | null;
   lines: StockMovementLine[];
 };
 
 export type StockMovementLine = {
   id: string;
   stockBucketId: string;
+  stockBucketReference: string;
   bucketType: ArticleKind;
   expirationDate: string | null;
   packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
@@ -51,6 +53,7 @@ export type StockBucketStatus = 'Empty' | 'Sellable' | 'Expired' | 'Unsellable';
 
 export type StockBucket = {
   id: string;
+  reference: string;
   createdAt: string;
   type: ArticleKind;
   expirationDate: string | null;
@@ -89,11 +92,27 @@ export type PagedArticles = {
 type CreatedArticle = { id: string };
 type RecordedSupply = { movementId: string; bucketId: string };
 type RecordedSale = { movementId: string; soldQuantity: number };
+type RecordedInventory = { movementId: string; adjustedBucketCount: number; createdBucketCount: number };
 
 export type RecordSupplyRequest = {
+  stockBucketReference: string;
   quantity: number;
   expirationDate: string | null;
   packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
+};
+
+export type RecordInventoryRequest = {
+  comment: string | null;
+  existingBuckets: Array<{
+    stockBucketId: string;
+    countedQuantity: number;
+  }>;
+  newBuckets: Array<{
+    reference: string;
+    countedQuantity: number;
+    expirationDate: string | null;
+    packagingLevel: 'New' | 'Refurbished' | 'Unsellable' | null;
+  }>;
 };
 
 export type RecordSaleRequest = {
@@ -111,6 +130,14 @@ export function searchArticles(request: SearchArticlesRequest, signal?: AbortSig
 
 export function getArticleById(articleId: string, signal?: AbortSignal) {
   return apiRequest<ArticleDetails>(`/api/articles/${articleId}`, { signal });
+}
+
+export function searchStockBuckets(articleId: string, referenceDigits: string, signal?: AbortSignal) {
+  return apiRequest<StockBucket[]>(`/api/articles/${articleId}/stock-buckets/search`, {
+    method: 'POST',
+    body: JSON.stringify({ referenceDigits }),
+    signal,
+  });
 }
 
 export function createFoodArticle(request: {
@@ -145,6 +172,13 @@ export function recordSupply(articleId: string, request: RecordSupplyRequest) {
 
 export function recordSale(articleId: string, request: RecordSaleRequest) {
   return apiRequest<RecordedSale>(`/api/articles/${articleId}/sales`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function recordInventory(articleId: string, request: RecordInventoryRequest) {
+  return apiRequest<RecordedInventory>(`/api/articles/${articleId}/inventories`, {
     method: 'POST',
     body: JSON.stringify(request),
   });

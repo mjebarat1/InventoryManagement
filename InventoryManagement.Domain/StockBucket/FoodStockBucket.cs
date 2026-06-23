@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InventoryManagement.Domain.Shared.ValueObjects;
 
 namespace InventoryManagement.Domain.StockBucket
 {
@@ -15,15 +16,21 @@ namespace InventoryManagement.Domain.StockBucket
             // EF Core
         }
 
-        private FoodStockBucket(Guid articleId, DateOnly expirationDate)
-            : base(articleId)
+        private FoodStockBucket(
+            Guid articleId,
+            StockBucketReference reference,
+            DateOnly expirationDate)
+            : base(articleId, reference)
         {
             ExpirationDate = expirationDate;
         }
 
-        public static FoodStockBucket Create(Guid articleId, DateOnly expirationDate)
+        public static FoodStockBucket Create(
+            Guid articleId,
+            StockBucketReference reference,
+            DateOnly expirationDate)
         {
-            return new FoodStockBucket(articleId, expirationDate);
+            return new FoodStockBucket(articleId, reference, expirationDate);
         }
 
         public override bool IsSellable(DateOnly today)

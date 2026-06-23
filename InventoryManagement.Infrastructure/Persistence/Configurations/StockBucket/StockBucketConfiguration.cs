@@ -15,6 +15,19 @@ namespace InventoryManagement.Infrastructure.Persistence.Configurations.StockBuc
             builder.Property(bucket => bucket.ArticleId)
                 .IsRequired();
 
+            builder.OwnsOne(bucket => bucket.Reference, reference =>
+            {
+                reference.Property(value => value.Value)
+                    .HasColumnName("Reference")
+                    .HasMaxLength(21)
+                    .IsRequired();
+                reference.HasIndex(value => value.Value)
+                    .IsUnique();
+            });
+
+            builder.Navigation(bucket => bucket.Reference)
+                .IsRequired();
+
             builder.Property(bucket => bucket.CreatedAt)
                 .IsRequired();
 

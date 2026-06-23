@@ -28,6 +28,7 @@ namespace InventoryManagement.Infrastructure
             services.AddScoped<IArticleRepository, ArticleRepository>();
             services.AddScoped<IArticleStockReadRepository, ArticleStockReadRepository>();
             services.AddScoped<IStockMovementRepository, StockMovementRepository>();
+            services.AddScoped<IStockBucketRepository, StockBucketRepository>();
 
             services.AddSingleton<IClock, SystemClock>();
 

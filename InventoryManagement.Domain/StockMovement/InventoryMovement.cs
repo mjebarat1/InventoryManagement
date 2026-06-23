@@ -1,5 +1,6 @@
 ﻿using InventoryManagement.Domain.Shared;
 using InventoryManagement.Domain.Shared.ValueObjects;
+using InventoryManagement.Domain.Shared.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,19 +11,28 @@ namespace InventoryManagement.Domain.StockMovement
 {
     public class InventoryMovement : StockMovement
     {
+        public string? Comment { get; private set; }
+
         private InventoryMovement()
         {
             // EF Core
         }
 
-        private InventoryMovement(Guid articleId)
+        private InventoryMovement(Guid articleId, string? comment)
             : base(articleId)
         {
+            Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
         }
 
-        public static InventoryMovement Create(Guid articleId, IReadOnlyCollection<StockInventoryAdjustment> adjustments)
+        public static InventoryMovement Create(
+            Guid articleId,
+            string? comment,
+            IReadOnlyCollection<StockInventoryAdjustment> adjustments)
         {
-            var movement = new InventoryMovement(articleId);
+            if (adjustments is null || adjustments.Count == 0)
+                throw new BusinessRuleException("Au moins un écart d'inventaire est obligatoire.");
+
+            var movement = new InventoryMovement(articleId, comment);
 
             foreach (var adjustment in adjustments)
             {
@@ -37,6 +47,9 @@ namespace InventoryManagement.Domain.StockMovement
                     currentQuantity: adjustment.CurrentQuantity,
                     countedQuantity: adjustment.CountedQuantity));
             }
+
+            if (movement.Lines.Count == 0)
+                throw new BusinessRuleException("Aucun écart d'inventaire n'a été constaté.");
 
             return movement;
         }

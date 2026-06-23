@@ -298,6 +298,8 @@ StockMovementLine
 - porte la quantité entrée dans ce bucket
 ```
 
+Chaque bucket possède une référence métier globale au format `ref-lot-` suivi de 13 chiffres. La référence article identifie le produit, tandis que la référence bucket identifie un lot précis.
+
 ---
 
 ## Modélisation du stock par buckets et lignes de mouvement
@@ -493,6 +495,8 @@ L’inventaire ne modifie pas les anciens mouvements.
 Il ajoute un nouveau mouvement d’inventaire avec les lignes d’ajustement nécessaires.
 
 Ce choix permet de conserver l’historique complet des écarts constatés.
+
+L'inventaire peut porter sur une sélection de lots existants et créer de nouveaux lots constatés physiquement. Les quantités système sont toujours recalculées depuis les lignes de mouvements. Un seul `InventoryMovement` regroupe les écarts et les entrées des nouveaux lots.
 
 ---
 
@@ -717,6 +721,8 @@ La migration corrective `RemovePackagingLevelFromSupplyMovement` supprime la col
 
 La migration `AddSaleModeToSaleMovement` ajoute le mode de vente nullable aux mouvements de vente afin de conserver l'historique du mode appliqué aux ventes alimentaires.
 
+La migration `AddStockBucketReferenceAndInventoryComment` ajoute la référence métier globale des buckets, rétroalimente les buckets existants avec des références séquentielles, crée l'index unique et ajoute le commentaire optionnel des inventaires.
+
 ### Appliquer les migrations
 
 ```bash
@@ -938,6 +944,8 @@ Codex a également été utilisé pour certaines tâches d’implémentation, no
 - mise à jour de documentation.
 
 Le scénario de vente a notamment été assisté pour l'allocation FEFO/FIFO, la persistance des lignes négatives, l'intégration API/client et la préparation des tests. Les règles de refus atomique sur stock insuffisant et les arbitrages d'allocation ont été validés humainement.
+
+Le scénario d'inventaire et la référence métier des lots ont été assistés pour la modélisation, la migration des données existantes, les contrats API, l'interface et les tests. Le format, l'unicité globale et le caractère partiel de l'inventaire ont été validés humainement.
 
 Le code final a été relu, adapté et organisé manuellement.
 

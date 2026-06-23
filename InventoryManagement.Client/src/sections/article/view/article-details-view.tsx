@@ -1,4 +1,4 @@
-import type { SaleMode, ArticlePrice, StockMovement, ArticleDetails } from 'src/api';
+import type { SaleMode, StockBucket, ArticlePrice, StockMovement, ArticleDetails } from 'src/api';
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
@@ -24,20 +24,32 @@ import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
 import FormControl from '@mui/material/FormControl';
 import DialogTitle from '@mui/material/DialogTitle';
+import Autocomplete from '@mui/material/Autocomplete';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TableContainer from '@mui/material/TableContainer';
+import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useTranslate } from 'src/locales';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ApiError, recordSale, recordSupply, getArticleById } from 'src/api';
+import { ApiError, recordSale, recordSupply, getArticleById, recordInventory, searchStockBuckets } from 'src/api';
 
 import { Iconify } from 'src/components/iconify';
 
 const formatMoney = (value: number, locale: string) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(value);
 const formatVat = (value: number, locale: string) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value);
 const formatDateOnly = (value: string, locale: string) => new Intl.DateTimeFormat(locale).format(new Date(`${value}T00:00:00`));
+const sanitizeReferenceDigits = (value: string) => value.replace(/\D/g, '').slice(0, 13);
+
+type InventoryExistingLine = { bucket: StockBucket; countedQuantity: string };
+type InventoryNewLine = {
+  key: string;
+  referenceDigits: string;
+  countedQuantity: string;
+  expirationDate: string;
+  packagingLevel: 'New' | 'Refurbished' | 'Unsellable';
+};
 
 export function ArticleDetailsView() {
   const { id } = useParams();
@@ -51,6 +63,7 @@ export function ArticleDetailsView() {
     location.state?.articleCreated ? { severity: 'success', message: t('articleCreate.success') } : null
   );
   const [supplyOpen, setSupplyOpen] = useState(false);
+  const [supplyReferenceDigits, setSupplyReferenceDigits] = useState('');
   const [supplyQuantity, setSupplyQuantity] = useState('');
   const [supplyExpirationDate, setSupplyExpirationDate] = useState('');
   const [supplyPackaging, setSupplyPackaging] = useState<'New' | 'Refurbished' | 'Unsellable'>('New');
@@ -61,6 +74,16 @@ export function ArticleDetailsView() {
   const [saleMode, setSaleMode] = useState<SaleMode | ''>('');
   const [saleError, setSaleError] = useState<string | null>(null);
   const [saleSubmitting, setSaleSubmitting] = useState(false);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [inventoryBucketToAdd, setInventoryBucketToAdd] = useState<StockBucket | null>(null);
+  const [inventorySearchDigits, setInventorySearchDigits] = useState('');
+  const [inventorySearchOptions, setInventorySearchOptions] = useState<StockBucket[]>([]);
+  const [inventorySearchLoading, setInventorySearchLoading] = useState(false);
+  const [inventoryExistingLines, setInventoryExistingLines] = useState<InventoryExistingLine[]>([]);
+  const [inventoryNewLines, setInventoryNewLines] = useState<InventoryNewLine[]>([]);
+  const [inventoryComment, setInventoryComment] = useState('');
+  const [inventoryError, setInventoryError] = useState<string | null>(null);
+  const [inventorySubmitting, setInventorySubmitting] = useState(false);
 
   const loadArticle = useCallback(async (signal?: AbortSignal) => {
     if (!id) return;
@@ -79,7 +102,35 @@ export function ArticleDetailsView() {
     return () => controller.abort();
   }, [loadArticle, t]);
 
+  useEffect(() => {
+    if (!inventoryOpen || !id || inventorySearchDigits.length < 9) {
+      setInventorySearchOptions([]);
+      setInventorySearchLoading(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setInventorySearchLoading(true);
+      searchStockBuckets(id, inventorySearchDigits, controller.signal)
+        .then(setInventorySearchOptions)
+        .catch((caughtError) => {
+          if (caughtError instanceof DOMException && caughtError.name === 'AbortError') return;
+          setInventoryError(caughtError instanceof ApiError ? caughtError.message : t('common.error'));
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setInventorySearchLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [id, inventoryOpen, inventorySearchDigits, t]);
+
   const openSupplyDialog = () => {
+    setSupplyReferenceDigits('');
     setSupplyQuantity('');
     setSupplyExpirationDate('');
     setSupplyPackaging('New');
@@ -89,6 +140,10 @@ export function ArticleDetailsView() {
 
   const submitSupply = async () => {
     if (!id || !article) return;
+    if (!/^\d{13}$/.test(supplyReferenceDigits)) {
+      setSupplyError(t('supply.validation.reference'));
+      return;
+    }
     const quantity = Number(supplyQuantity);
     if (!Number.isInteger(quantity) || quantity <= 0) {
       setSupplyError(t('supply.validation.quantity'));
@@ -103,6 +158,7 @@ export function ArticleDetailsView() {
     setSupplyError(null);
     try {
       await recordSupply(id, {
+        stockBucketReference: `ref-lot-${supplyReferenceDigits}`,
         quantity,
         expirationDate: article.type === 'Food' ? supplyExpirationDate : null,
         packagingLevel: article.type === 'NonFood' ? supplyPackaging : null,
@@ -121,6 +177,123 @@ export function ArticleDetailsView() {
       setNotification({ severity: 'error', message });
     } finally {
       setSupplySubmitting(false);
+    }
+  };
+
+  const openInventoryDialog = () => {
+    setInventoryBucketToAdd(null);
+    setInventorySearchDigits('');
+    setInventorySearchOptions([]);
+    setInventoryExistingLines([]);
+    setInventoryNewLines([]);
+    setInventoryComment('');
+    setInventoryError(null);
+    setInventoryOpen(true);
+  };
+
+  const addExistingInventoryBucket = () => {
+    if (!inventoryBucketToAdd) return;
+    if (inventoryExistingLines.some((line) => line.bucket.id === inventoryBucketToAdd.id)) {
+      setInventoryError(t('inventory.validation.duplicateBucket'));
+      return;
+    }
+    setInventoryExistingLines((current) => [
+      ...current,
+      { bucket: inventoryBucketToAdd, countedQuantity: String(inventoryBucketToAdd.physicalQuantity) },
+    ]);
+    setInventoryBucketToAdd(null);
+    setInventorySearchDigits('');
+    setInventorySearchOptions([]);
+    setInventoryError(null);
+  };
+
+  const addNewInventoryBucket = () => {
+    setInventoryNewLines((current) => [
+      ...current,
+      {
+        key: `new-${Date.now()}-${current.length}`,
+        referenceDigits: '',
+        countedQuantity: '',
+        expirationDate: '',
+        packagingLevel: 'New',
+      },
+    ]);
+    setInventoryError(null);
+  };
+
+  const submitInventory = async () => {
+    if (!id || !article) return;
+    if (inventoryExistingLines.length === 0 && inventoryNewLines.length === 0) {
+      setInventoryError(t('inventory.validation.noSelection'));
+      return;
+    }
+
+    const existingQuantitiesValid = inventoryExistingLines.every((line) => {
+      const value = Number(line.countedQuantity);
+      return Number.isInteger(value) && value >= 0;
+    });
+    if (!existingQuantitiesValid) {
+      setInventoryError(t('inventory.validation.countedQuantity'));
+      return;
+    }
+
+    const existingReferences = new Set(article.buckets.map((bucket) => bucket.reference));
+    const newReferences = inventoryNewLines.map((line) => `ref-lot-${line.referenceDigits}`);
+    if (inventoryNewLines.some((line) => !/^\d{13}$/.test(line.referenceDigits))) {
+      setInventoryError(t('inventory.validation.reference'));
+      return;
+    }
+    if (new Set(newReferences).size !== newReferences.length || newReferences.some((reference) => existingReferences.has(reference))) {
+      setInventoryError(t('inventory.validation.duplicateReference'));
+      return;
+    }
+    if (inventoryNewLines.some((line) => !Number.isInteger(Number(line.countedQuantity)) || Number(line.countedQuantity) <= 0)) {
+      setInventoryError(t('inventory.validation.newQuantity'));
+      return;
+    }
+    if (article.type === 'Food' && inventoryNewLines.some((line) => !line.expirationDate)) {
+      setInventoryError(t('inventory.validation.expirationDate'));
+      return;
+    }
+
+    const hasExistingDifference = inventoryExistingLines.some(
+      (line) => Number(line.countedQuantity) !== line.bucket.physicalQuantity
+    );
+    if (!hasExistingDifference && inventoryNewLines.length === 0) {
+      setInventoryError(t('inventory.validation.noDifference'));
+      return;
+    }
+
+    setInventorySubmitting(true);
+    setInventoryError(null);
+    try {
+      await recordInventory(id, {
+        comment: inventoryComment.trim() || null,
+        existingBuckets: inventoryExistingLines.map((line) => ({
+          stockBucketId: line.bucket.id,
+          countedQuantity: Number(line.countedQuantity),
+        })),
+        newBuckets: inventoryNewLines.map((line) => ({
+          reference: `ref-lot-${line.referenceDigits}`,
+          countedQuantity: Number(line.countedQuantity),
+          expirationDate: article.type === 'Food' ? line.expirationDate : null,
+          packagingLevel: article.type === 'NonFood' ? line.packagingLevel : null,
+        })),
+      });
+      setInventoryOpen(false);
+      setNotification({ severity: 'success', message: t('inventory.success') });
+
+      try {
+        await loadArticle();
+      } catch {
+        setNotification({ severity: 'error', message: t('inventory.refreshError') });
+      }
+    } catch (caughtError) {
+      const message = caughtError instanceof ApiError ? caughtError.message : t('common.error');
+      setInventoryError(message);
+      setNotification({ severity: 'error', message });
+    } finally {
+      setInventorySubmitting(false);
     }
   };
 
@@ -192,6 +365,17 @@ export function ArticleDetailsView() {
     { label: t('articleDetails.nonSellableStock'), value: String(article.nonSellableStock) },
     { label: t('articles.priceExcludingTax'), value: formatMoney(article.priceExcludingTax, locale) },
   ];
+  const availableInventoryBuckets = inventorySearchOptions.filter(
+    (bucket) => !inventoryExistingLines.some((line) => line.bucket.id === bucket.id)
+  );
+  const inventorySystemTotal = inventoryExistingLines.reduce(
+    (total, line) => total + line.bucket.physicalQuantity,
+    0
+  );
+  const inventoryCountedTotal = [
+    ...inventoryExistingLines.map((line) => Number(line.countedQuantity)),
+    ...inventoryNewLines.map((line) => Number(line.countedQuantity)),
+  ].reduce((total, quantity) => total + (Number.isFinite(quantity) ? quantity : 0), 0);
 
   return (
     <DashboardContent>
@@ -227,13 +411,14 @@ export function ArticleDetailsView() {
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
         <Button variant="contained" onClick={openSupplyDialog}>{t('articleDetails.supply')}</Button>
         <Button variant="contained" onClick={openSaleDialog}>{t('articleDetails.sale')}</Button>
-        <Button variant="contained" disabled>{t('articleDetails.inventory')}</Button>
+        <Button variant="contained" onClick={openInventoryDialog}>{t('articleDetails.inventory')}</Button>
       </Box>
 
       <Card sx={{ mb: 3, overflow: 'hidden' }}>
         <Typography variant="h6" sx={{ p: 3, pb: 1 }}>{t('articleDetails.stockBuckets')}</Typography>
         <TableContainer><Table>
           <TableHead><TableRow>
+            <TableCell>{t('articleDetails.bucketReference')}</TableCell>
             <TableCell>{article.type === 'Food' ? t('articleDetails.expirationDate') : t('articleDetails.packaging')}</TableCell>
             <TableCell>{t('articleDetails.physicalQuantity')}</TableCell>
             <TableCell>{t('articleDetails.sellableQuantity')}</TableCell>
@@ -241,9 +426,10 @@ export function ArticleDetailsView() {
           </TableRow></TableHead>
           <TableBody>
             {article.buckets.length === 0 ? (
-              <TableRow><TableCell colSpan={4} align="center" sx={{ py: 6 }}>{t('articleDetails.noBuckets')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}>{t('articleDetails.noBuckets')}</TableCell></TableRow>
             ) : article.buckets.map((bucket) => (
               <TableRow key={bucket.id}>
+                <TableCell sx={{ fontWeight: 600 }}>{bucket.reference}</TableCell>
                 <TableCell>
                   {bucket.type === 'Food' && bucket.expirationDate ? formatDateOnly(bucket.expirationDate, locale) : null}
                   {bucket.type === 'NonFood' && bucket.packagingLevel ? t(`packaging.${bucket.packagingLevel}`) : null}
@@ -289,6 +475,14 @@ export function ArticleDetailsView() {
             {supplyError && <Alert severity="error">{supplyError}</Alert>}
             <TextField
               required
+              label={t('supply.reference')}
+              value={supplyReferenceDigits}
+              inputProps={{ inputMode: 'numeric', maxLength: 13, pattern: '[0-9]*' }}
+              InputProps={{ startAdornment: <InputAdornment position="start">ref-lot-</InputAdornment> }}
+              onChange={(event) => setSupplyReferenceDigits(sanitizeReferenceDigits(event.target.value))}
+            />
+            <TextField
+              required
               type="number"
               label={t('supply.quantity')}
               value={supplyQuantity}
@@ -325,6 +519,128 @@ export function ArticleDetailsView() {
           <Button onClick={() => setSupplyOpen(false)} disabled={supplySubmitting}>{t('common.cancel')}</Button>
           <Button variant="contained" onClick={submitSupply} disabled={supplySubmitting}>
             {supplySubmitting ? t('common.loading') : t('supply.submit')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={inventoryOpen} onClose={() => !inventorySubmitting && setInventoryOpen(false)} fullWidth maxWidth="lg">
+        <DialogTitle>{t('inventory.title')}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gap: 3, pt: 1 }}>
+            {inventoryError && <Alert severity="error">{inventoryError}</Alert>}
+            {article.buckets.length === 0 && <Alert severity="info">{t('inventory.noExistingBuckets')}</Alert>}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Autocomplete
+                fullWidth
+                options={availableInventoryBuckets}
+                value={inventoryBucketToAdd}
+                inputValue={inventorySearchDigits}
+                loading={inventorySearchLoading}
+                filterOptions={(options) => options}
+                getOptionLabel={(option) => option.reference.replace('ref-lot-', '')}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                onChange={(_, value) => {
+                  setInventoryBucketToAdd(value);
+                  if (value) setInventorySearchDigits(value.reference.replace('ref-lot-', ''));
+                }}
+                onInputChange={(_, value, reason) => {
+                  if (reason === 'input') {
+                    setInventorySearchDigits(sanitizeReferenceDigits(value));
+                    setInventoryBucketToAdd(null);
+                  }
+                }}
+                noOptionsText={inventorySearchDigits.length < 9 ? t('inventory.searchMinimum') : t('inventory.noSearchResults')}
+                loadingText={t('common.loading')}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={t('inventory.searchBucket')}
+                    inputProps={{ ...params.inputProps, inputMode: 'numeric', maxLength: 13 }}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <>
+                          <InputAdornment position="start">ref-lot-</InputAdornment>
+                          {params.InputProps.startAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+              <Button variant="outlined" onClick={addExistingInventoryBucket} disabled={!inventoryBucketToAdd}>
+                {t('inventory.add')}
+              </Button>
+            </Box>
+
+            <Box>
+              <Button variant="outlined" startIcon={<Iconify icon="mingcute:add-line" />} onClick={addNewInventoryBucket}>
+                {t('inventory.addNewBucket')}
+              </Button>
+            </Box>
+
+            <TableContainer><Table size="small">
+              <TableHead><TableRow>
+                <TableCell>{t('articleDetails.bucketReference')}</TableCell>
+                <TableCell>{article.type === 'Food' ? t('articleDetails.expirationDate') : t('articleDetails.packaging')}</TableCell>
+                <TableCell>{t('inventory.systemQuantity')}</TableCell>
+                <TableCell>{t('inventory.countedQuantity')}</TableCell>
+                <TableCell>{t('inventory.difference')}</TableCell>
+                <TableCell>{t('articleDetails.status')}</TableCell>
+                <TableCell>{t('articles.actions')}</TableCell>
+              </TableRow></TableHead>
+              <TableBody>
+                {inventoryExistingLines.map((line) => {
+                  const counted = Number(line.countedQuantity);
+                  const difference = Number.isFinite(counted) ? counted - line.bucket.physicalQuantity : 0;
+                  return (
+                    <TableRow key={line.bucket.id}>
+                      <TableCell>{line.bucket.reference}</TableCell>
+                      <TableCell>
+                        {line.bucket.expirationDate ? formatDateOnly(line.bucket.expirationDate, locale) : null}
+                        {line.bucket.packagingLevel ? t(`packaging.${line.bucket.packagingLevel}`) : null}
+                      </TableCell>
+                      <TableCell>{line.bucket.physicalQuantity}</TableCell>
+                      <TableCell><TextField size="small" type="number" value={line.countedQuantity} inputProps={{ min: 0, step: 1 }} onChange={(event) => setInventoryExistingLines((current) => current.map((item) => item.bucket.id === line.bucket.id ? { ...item, countedQuantity: event.target.value } : item))} /></TableCell>
+                      <TableCell sx={{ color: difference === 0 ? 'text.secondary' : difference > 0 ? 'success.main' : 'error.main', fontWeight: 700 }}>{difference > 0 ? `+${difference}` : difference}</TableCell>
+                      <TableCell><Chip size="small" label={t(`bucketStatuses.${line.bucket.status}`)} /></TableCell>
+                      <TableCell><IconButton aria-label={t('inventory.remove')} onClick={() => setInventoryExistingLines((current) => current.filter((item) => item.bucket.id !== line.bucket.id))}><Iconify icon="solar:trash-bin-trash-bold" /></IconButton></TableCell>
+                    </TableRow>
+                  );
+                })}
+                {inventoryNewLines.map((line) => {
+                  const counted = Number(line.countedQuantity);
+                  const difference = Number.isFinite(counted) ? counted : 0;
+                  return (
+                    <TableRow key={line.key}>
+                      <TableCell><TextField size="small" required value={line.referenceDigits} inputProps={{ inputMode: 'numeric', maxLength: 13, pattern: '[0-9]*' }} InputProps={{ startAdornment: <InputAdornment position="start">ref-lot-</InputAdornment> }} onChange={(event) => setInventoryNewLines((current) => current.map((item) => item.key === line.key ? { ...item, referenceDigits: sanitizeReferenceDigits(event.target.value) } : item))} /></TableCell>
+                      <TableCell>
+                        {article.type === 'Food' ? <TextField size="small" required type="date" value={line.expirationDate} onChange={(event) => setInventoryNewLines((current) => current.map((item) => item.key === line.key ? { ...item, expirationDate: event.target.value } : item))} /> : <Select size="small" value={line.packagingLevel} onChange={(event) => setInventoryNewLines((current) => current.map((item) => item.key === line.key ? { ...item, packagingLevel: event.target.value as InventoryNewLine['packagingLevel'] } : item))}><MenuItem value="New">{t('packaging.New')}</MenuItem><MenuItem value="Refurbished">{t('packaging.Refurbished')}</MenuItem><MenuItem value="Unsellable">{t('packaging.Unsellable')}</MenuItem></Select>}
+                      </TableCell>
+                      <TableCell>0</TableCell>
+                      <TableCell><TextField size="small" required type="number" value={line.countedQuantity} inputProps={{ min: 1, step: 1 }} onChange={(event) => setInventoryNewLines((current) => current.map((item) => item.key === line.key ? { ...item, countedQuantity: event.target.value } : item))} /></TableCell>
+                      <TableCell sx={{ color: 'success.main', fontWeight: 700 }}>{difference > 0 ? `+${difference}` : difference}</TableCell>
+                      <TableCell><Chip size="small" color="info" label={t('inventory.newBucket')} /></TableCell>
+                      <TableCell><IconButton aria-label={t('inventory.remove')} onClick={() => setInventoryNewLines((current) => current.filter((item) => item.key !== line.key))}><Iconify icon="solar:trash-bin-trash-bold" /></IconButton></TableCell>
+                    </TableRow>
+                  );
+                })}
+                {inventoryExistingLines.length === 0 && inventoryNewLines.length === 0 && <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}>{t('inventory.noSelectedBuckets')}</TableCell></TableRow>}
+              </TableBody>
+            </Table></TableContainer>
+
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              <Info label={t('inventory.systemTotal')} value={String(inventorySystemTotal)} />
+              <Info label={t('inventory.countedTotal')} value={String(inventoryCountedTotal)} />
+              <Info label={t('inventory.totalDifference')} value={String(inventoryCountedTotal - inventorySystemTotal)} />
+            </Box>
+            <TextField multiline minRows={2} label={t('inventory.comment')} value={inventoryComment} onChange={(event) => setInventoryComment(event.target.value)} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setInventoryOpen(false)} disabled={inventorySubmitting}>{t('common.cancel')}</Button>
+          <Button variant="contained" onClick={submitInventory} disabled={inventorySubmitting}>
+            {inventorySubmitting ? t('common.loading') : t('inventory.submit')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -417,6 +733,11 @@ function MovementRows({ movement, locale, t }: { movement: StockMovement; locale
                   <Info label={t('sale.totalIncludingTax')} value={formatMoney(movement.totalIncludingTax ?? 0, locale)} />
                 </Box>
               )}
+              {movement.type === 'Inventory' && movement.comment && (
+                <Box sx={{ mb: 2 }}>
+                  <Info label={t('inventory.comment')} value={movement.comment} />
+                </Box>
+              )}
               <Table size="small">
                 <TableHead><TableRow>
                   <TableCell>{t('articleDetails.bucket')}</TableCell>
@@ -427,6 +748,7 @@ function MovementRows({ movement, locale, t }: { movement: StockMovement; locale
                 <TableBody>{movement.lines.map((line) => (
                   <TableRow key={line.id}>
                     <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{line.stockBucketReference}</Typography>
                       {line.bucketType === 'Food' && line.expirationDate ? `${t('articleDetails.expirationDate')} ${formatDateOnly(line.expirationDate, locale)}` : null}
                       {line.bucketType === 'NonFood' && line.packagingLevel ? `${t('articleDetails.packaging')} ${t(`packaging.${line.packagingLevel}`)}` : null}
                     </TableCell>
