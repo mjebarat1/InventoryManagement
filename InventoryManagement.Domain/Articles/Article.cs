@@ -6,12 +6,12 @@ namespace InventoryManagement.Domain.Articles
     public abstract class Article
     {
         public Guid Id { get; private set; }
-        public Ean13Reference Reference { get; private set; }
-        public string Name { get; private set; }
-        public Money PriceExcludingTax { get; private set; }
+        public Ean13Reference Reference { get; private set; } = null!;
+        public string Name { get; private set; } = null!;
+        public Money PriceExcludingTax { get; private set; } = null!;
         public bool IsActive { get; private set; }
 
-        public ICollection<StockMovement.StockMovement> StockMovements { get; private set; }
+        public ICollection<StockMovement.StockMovement> StockMovements { get; private set; } = new List<StockMovement.StockMovement>();
 
         protected Article()
         {

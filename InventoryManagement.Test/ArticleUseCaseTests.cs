@@ -1,3 +1,4 @@
+using InventoryManagement.Application.Articles.CreateFoodArticle;
 using InventoryManagement.Application.Articles.CreateNonFoodArticle;
 using InventoryManagement.Application.Articles.GetArticleById;
 using InventoryManagement.Application.Articles.SearchArticles;
@@ -12,6 +13,53 @@ namespace InventoryManagement.Test;
 
 public sealed class ArticleUseCaseTests
 {
+    [Fact]
+    public async Task CreateFoodArticle_CreatesArticleWithSaleModes()
+    {
+        var repository = new FakeArticleRepository();
+        var useCase = new CreateFoodArticleUseCase(repository);
+
+        var result = await useCase.ExecuteAsync(
+            new CreateFoodArticleCommand(
+                "1234567890123",
+                "Sandwich poulet",
+                4.50m,
+                new[] { SaleMode.TakeAway, SaleMode.OnSite }));
+
+        Assert.NotEqual(Guid.Empty, result.ArticleId);
+        var article = Assert.IsType<FoodArticle>(repository.AddedArticle);
+        Assert.Equal("1234567890123", article.Reference.Value);
+        Assert.Equal(4.50m, article.PriceExcludingTax.Amount);
+        Assert.Equal(new[] { SaleMode.TakeAway, SaleMode.OnSite }, article.SaleModes);
+    }
+
+    [Fact]
+    public async Task CreateFoodArticle_RejectsEmptySaleModes()
+    {
+        var useCase = new CreateFoodArticleUseCase(new FakeArticleRepository());
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => useCase.ExecuteAsync(
+            new CreateFoodArticleCommand(
+                "1234567890123",
+                "Sandwich poulet",
+                4.50m,
+                Array.Empty<SaleMode>())));
+    }
+
+    [Fact]
+    public async Task CreateFoodArticle_RejectsDuplicateReference()
+    {
+        var repository = new FakeArticleRepository { ReferenceExists = true };
+        var useCase = new CreateFoodArticleUseCase(repository);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => useCase.ExecuteAsync(
+            new CreateFoodArticleCommand(
+                "1234567890123",
+                "Sandwich poulet",
+                4.50m,
+                new[] { SaleMode.TakeAway })));
+    }
+
     [Fact]
     public async Task CreateNonFoodArticle_CreatesArticleWithoutPackaging()
     {

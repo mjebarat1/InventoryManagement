@@ -1,17 +1,10 @@
 using InventoryManagement.Domain.Shared.Exceptions;
 using InventoryManagement.Domain.Shared.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryManagement.Domain.Articles
 {
     public sealed class FoodArticle : Article
     {
-        // Mode de vente autorisé pour cet aritcle
         private readonly List<FoodArticleSaleMode> _saleModes = new();
         public IReadOnlyCollection<SaleMode> SaleModes
             => _saleModes.Select(x => x.Value).ToList().AsReadOnly();

@@ -1,9 +1,4 @@
 ﻿using InventoryManagement.Domain.Articles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using InventoryManagement.Domain.Shared.ValueObjects;
 
 namespace InventoryManagement.Domain.StockBucket
@@ -12,7 +7,7 @@ namespace InventoryManagement.Domain.StockBucket
     {
         public Guid Id { get; private set; }
         public Guid ArticleId { get; private set; }
-        public StockBucketReference Reference { get; private set; }
+        public StockBucketReference Reference { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; }
 
         public Article? Article { get; private set; }

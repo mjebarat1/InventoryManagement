@@ -67,11 +67,6 @@ namespace InventoryManagement.Api.Controllers
                 command,
                 cancellationToken);
 
-            //return CreatedAtAction(
-            //    nameof(CreateFoodArticle),
-            //    new { id = result.ArticleId },
-            //    result);
-
             return StatusCode(StatusCodes.Status201Created, new
             {
                 id = result.ArticleId

@@ -44,7 +44,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 
-// Je laisse swagger ouvert pour le moment
 app.UseSwagger();
 app.UseSwaggerUI();
 

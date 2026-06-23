@@ -689,13 +689,17 @@ http://localhost:3039
 http://127.0.0.1:3039
 ```
 
-Docker publie également l’API en HTTP sur :
+### Ports Docker selon le profil
 
-```text
-http://localhost:58995
-```
+Plusieurs fichiers compose existent, chacun avec son usage et ses ports :
 
-Le client utilise directement l’endpoint HTTPS afin d’éviter une redirection HTTP vers HTTPS pendant les appels CORS.
+| Profil | Fichier(s) | Port API | Schéma | Port client |
+|---|---|---|---|---|
+| Dev VS / IDE | `docker-compose.yml` + `docker-compose.override.yml` | 58995 (HTTP) et 7280 (HTTPS) | HTTPS via certificat Kestrel monté | servi par Vite hors Docker |
+| Reproduction prod en local | `docker-compose.localprod.yml` | 8080 | HTTP | 3039 |
+| Production déployée | `docker-compose.prod.yml` | 8090 | HTTP (TLS en amont) | 3039 |
+
+En profil dev VS, le client Vite appelle directement l’endpoint HTTPS afin d’éviter une redirection HTTP vers HTTPS pendant les appels CORS. En profil prod-local et prod, le client appelle l’API en HTTP via l’URL configurée par `VITE_API_BASE_URL`.
 
 ---
 
@@ -719,13 +723,16 @@ Exemple :
 dotnet ef migrations add AddStockBucketsAndMovementLines --project ./InventoryManagement.Infrastructure/InventoryManagement.Infrastructure.csproj --startup-project ./InventoryManagement.Api/InventoryManagement.Api.csproj --context StockDbContext --output-dir Persistence/Migrations
 ```
 
-La migration corrective `RemovePackagingLevelFromSupplyMovement` supprime la colonne résiduelle `PackagingLevel` de `ArticleMovements`, cette donnée étant désormais portée uniquement par `NonFoodStockBucket`.
+Migrations appliquées dans l'ordre :
 
-La migration `AddSaleModeToSaleMovement` ajoute le mode de vente nullable aux mouvements de vente afin de conserver l'historique du mode appliqué aux ventes alimentaires.
-
-La migration `AddStockBucketReferenceAndInventoryComment` ajoute la référence métier globale des buckets, rétroalimente les buckets existants avec des références séquentielles, crée l'index unique et ajoute le commentaire optionnel des inventaires.
-
-La migration `AddArticleActivityStatus` ajoute le statut actif des articles. Les données existantes sont actives par défaut.
+- `InitialCreate` — schéma initial Articles, FoodArticleSaleModes et ArticleMovements.
+- `RemovePackagingLevelFromArticle` — retire `PackagingLevel` de la table `Articles` : la propriété appartient au lot, pas à la fiche.
+- `AddStockBucketAndMouvementLine` — introduit les tables `StockBuckets` (TPH Food / NonFood) et `StockMovementLines`.
+- `RemoveUnusedColumns` — nettoie des colonnes devenues redondantes après l'introduction des buckets.
+- `RemovePackagingLevelFromSupplyMovement` — supprime la colonne résiduelle `PackagingLevel` de `ArticleMovements`, cette donnée étant désormais portée uniquement par `NonFoodStockBucket`.
+- `AddSaleModeToSaleMovement` — ajoute le mode de vente nullable aux mouvements de vente afin de conserver l'historique du mode appliqué aux ventes alimentaires.
+- `AddStockBucketReferenceAndInventoryComment` — ajoute la référence métier globale des buckets, rétroalimente les buckets existants avec des références séquentielles, crée l'index unique et ajoute le commentaire optionnel des inventaires.
+- `AddArticleActivityStatus` — ajoute le statut actif des articles. Les données existantes sont actives par défaut.
 
 ### Appliquer les migrations
 
@@ -963,16 +970,12 @@ Les choix d’architecture, les arbitrages métier, les contrats API et les limi
 
 ## Temps passé
 
-Temps passé approximatif : à compléter avant la remise.
+Temps passé approximatif : environ 1,5 jour de travail effectif.
 
 Répartition indicative :
 
-- analyse de l’énoncé et modélisation : à compléter ;
-- mise en place de l’architecture backend : à compléter ;
-- persistance EF Core et migrations : à compléter ;
-- interface client : à compléter ;
-- tests et corrections : à compléter ;
-- documentation : à compléter.
+- analyse de l'énoncé, modélisation du domaine et mise en place de l'architecture (couches, ports, use cases) : environ 1 jour ;
+- implémentation, persistance EF Core, migrations, scénarios de mouvements, client React/Vite, tests et documentation : environ 0,5 jour.
 
 ---
 

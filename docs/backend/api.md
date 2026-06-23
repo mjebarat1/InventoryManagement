@@ -209,12 +209,6 @@ L'inventaire peut être partiel. Le backend recalcule les quantités système de
 
 La recherche est limitée aux buckets de l'article courant, accepte entre 9 et 13 chiffres après le préfixe fixe `ref-lot-`, effectue une recherche par préfixe et retourne au maximum 20 résultats. Les quantités et statuts retournés sont calculés côté backend.
 
-### Stock
-
-| Méthode | Route | Description | Statut |
-|---|---|---|---|
-| À compléter | À compléter | À compléter | À compléter |
-
 ### Disponibilité de l'API
 
 #### GET /api/ping

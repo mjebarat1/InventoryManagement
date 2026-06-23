@@ -6,9 +6,9 @@ namespace InventoryManagement.Domain.StockMovement
 {
     public class SaleMovement : StockMovement
     {
-        public Money UnitPriceExcludingTax { get; private set; }
-        public Money UnitPriceIncludingTax { get; private set; }
-        public VatRate VatRate { get; private set; }
+        public Money UnitPriceExcludingTax { get; private set; } = null!;
+        public Money UnitPriceIncludingTax { get; private set; } = null!;
+        public VatRate VatRate { get; private set; } = null!;
         public SaleMode? SaleMode { get; private set; }
 
         private SaleMovement()

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace InventoryManagement.Domain.Articles
+﻿namespace InventoryManagement.Domain.Articles
 {
-    public  class FoodArticleSaleMode
+    public sealed class FoodArticleSaleMode
     {
         public SaleMode Value { get; private set; }
 

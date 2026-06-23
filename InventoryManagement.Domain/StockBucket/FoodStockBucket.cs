@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using InventoryManagement.Domain.Shared.ValueObjects;
+﻿using InventoryManagement.Domain.Shared.ValueObjects;
 
 namespace InventoryManagement.Domain.StockBucket
 {

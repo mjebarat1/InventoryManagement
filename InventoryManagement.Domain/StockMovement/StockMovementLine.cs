@@ -1,9 +1,4 @@
 ﻿using InventoryManagement.Domain.Shared.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryManagement.Domain.StockMovement
 {
@@ -15,13 +10,12 @@ namespace InventoryManagement.Domain.StockMovement
 
         public int QuantityDelta { get; private set; }
 
-        // just epour l'historique
         public Quantity? QuantityBefore { get; private set; }
         public Quantity? QuantityAfter { get; private set; }
 
-        public StockBucket.StockBucket? StockBucket  { get; private set; }
+        public StockBucket.StockBucket? StockBucket { get; private set; }
 
-        public StockMovement? StockMovement { get; set;  }
+        public StockMovement? StockMovement { get; private set; }
 
 
         private StockMovementLine()
