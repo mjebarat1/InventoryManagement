@@ -88,5 +88,6 @@ jobs:
         run: |
           cd /opt/inventorymanagement
           docker compose -f docker-compose.prod.yml pull
+          docker rm -f $(docker ps -aq --filter "name=inventorymanagement") 2>/dev/null || true
           docker compose -f docker-compose.prod.yml up -d --remove-orphans
           docker image prune -f
