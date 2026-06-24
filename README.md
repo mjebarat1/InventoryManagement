@@ -689,21 +689,9 @@ http://localhost:3039
 http://127.0.0.1:3039
 ```
 
-### Ports Docker selon le profil
-
-Plusieurs fichiers compose existent, chacun avec son usage et ses ports :
-
-| Profil | Fichier(s) | Port API | Schéma | Port client |
-|---|---|---|---|---|
-| Dev VS / IDE | `docker-compose.yml` + `docker-compose.override.yml` | 58995 (HTTP) et 7280 (HTTPS) | HTTPS via certificat Kestrel monté | servi par Vite hors Docker |
-| Reproduction prod en local | `docker-compose.localprod.yml` | 8080 | HTTP | 3039 |
-| Production déployée | `docker-compose.prod.yml` | 8090 | HTTP (TLS en amont) | 3039 |
-
-En profil dev VS, le client Vite appelle directement l’endpoint HTTPS afin d’éviter une redirection HTTP vers HTTPS pendant les appels CORS. En profil prod-local et prod, le client appelle l’API en HTTP via l’URL configurée par `VITE_API_BASE_URL`.
-
----
 
 ## Base de données et migrations
+
 
 Le projet utilise SQLite comme base de données locale.
 
@@ -781,6 +769,35 @@ Le fichier SQLite reste donc en dehors de l’image Docker.
 L’image Docker contient uniquement l’application.
 
 La base de données est montée au runtime via Docker Compose.
+
+---
+
+## Schéma relationnel simplifié
+
+Le schéma ci-dessous présente les principales tables utilisées pour la gestion de stock, ainsi que les relations entre les articles, les lots, les mouvements et les lignes de mouvement.
+
+![MCD - Gestion de stock](docs/images/mcd.png)
+
+La quantité courante d’un lot n’est pas stockée directement dans la table `StockBuckets`.  
+Elle est recalculée à partir de la somme des `QuantityDelta` présents dans `StockMovementLines`.
+
+```text
+Quantité courante d’un lot =
+SUM(StockMovementLines.QuantityDelta)
+WHERE StockBucketId = bucket.Id
+```
+
+Ce choix permet de conserver un historique complet des mouvements de stock : approvisionnements, ventes et inventaires.
+
+### Notes de lecture
+
+- `Articles` contient les fiches produits.
+- `FoodArticleSaleModes` contient les modes de vente autorisés pour les articles alimentaires.
+- `StockBuckets` représente les lots ou catégories de stock rattachés à un article.
+- `ArticleMovements` représente les événements métier : approvisionnement, vente ou inventaire.
+- `StockMovementLines` représente l’impact quantitatif d’un mouvement sur un lot.
+- Une ligne de mouvement contient toujours une quantité avant, un delta, puis une quantité après.
+- Le stock physique est calculé à partir de l’historique des mouvements, sans stocker une quantité courante directement sur le lot.
 
 ---
 
@@ -896,8 +913,6 @@ Le modèle utilise une stratégie TPH pour simplifier la persistance de l’hér
 
 Cela implique que certaines colonnes spécifiques à certains mouvements peuvent être nulles pour d’autres types de mouvements.
 
-Ce choix est acceptable dans le cadre de l’exercice.
-
 Une évolution possible serait d’utiliser une autre stratégie de mapping si le modèle de persistance devenait plus complexe.
 
 ---
@@ -932,39 +947,32 @@ Cette évolution permettrait de mieux distinguer les erreurs de validation, les 
 
 ## Usage de l’IA
 
-J’ai utilisé ChatGPT comme assistant de réflexion et d’aide à la conception.
+L’intelligence artificielle a été utilisée comme outil d’assistance tout au long du projet, avec des usages différents selon les phases.
 
-L’IA a été utilisée pour :
+Dans un premier temps, ChatGPT a été utilisé comme assistant de réflexion pour analyser l’énoncé, comparer plusieurs approches d’architecture et clarifier les choix de conception. Cette phase a notamment permis de réfléchir à l’architecture hexagonale, à la modélisation DDD, à la séparation entre article, lot de stock, mouvement et ligne de mouvement, ainsi qu’aux règles métier liées au stock vendable, aux DLC, aux inventaires et aux mouvements de stock.
 
-- analyser l’énoncé ;
-- comparer plusieurs approches d’architecture ;
-- réfléchir à la modélisation DDD ;
-- discuter les choix entre modèle simple et modèle métier plus riche ;
-- réfléchir à la séparation entre article, bucket, mouvement et ligne de mouvement ;
-- générer des exemples de structure de projet ;
-- proposer des exemples de configuration EF Core ;
-- challenger les choix de modélisation ;
-- aider à rédiger la documentation.
+Une fois l’architecture générale définie, la modélisation préparée et la couche `Domain` stabilisée, Codex a été utilisé pour accélérer certaines tâches d’implémentation. Les demandes ont été découpées en plusieurs tâches ciblées, chacune décrite par un prompt précis : développement backend, développement frontend, adaptation des contrats API, ajout de tests, correction d’anomalies ou mise à jour de la documentation.
 
-Codex a également été utilisé pour certaines tâches d’implémentation, notamment :
+Un cadre de travail spécifique a été mis en place dans le fichier `AGENTS.md`. Ce fichier donne à Codex les consignes de travail du projet : lire la documentation existante, analyser le besoin avant de modifier le code, respecter l’architecture définie, exécuter les tests lorsque c’est possible et mettre à jour la documentation après les changements significatifs.
 
-- analyse du code existant ;
-- génération ou adaptation de code backend ;
-- génération ou adaptation de code frontend ;
-- ajout de tests ;
-- mise à jour de documentation.
+Le dossier `docs` a été construit progressivement avec l’aide de Codex au fil des différentes tâches. À chaque évolution significative, Codex devait compléter ou mettre à jour la documentation afin de conserver une trace des décisions techniques, des règles métier, des choix d’architecture et des fonctionnalités implémentées. Cette documentation a ensuite servi de contexte projet pour les tâches suivantes, permettant à Codex de se repérer plus rapidement dans la solution.
 
-Le scénario de vente a notamment été assisté pour l'allocation FEFO/FIFO, la persistance des lignes négatives, l'intégration API/client et la préparation des tests. Les règles de refus atomique sur stock insuffisant et les arbitrages d'allocation ont été validés humainement.
+Cette approche correspond davantage à un contexte projet structuré qu’à un apprentissage continu au sens strict. Le modèle ne réapprend pas le projet de manière permanente, mais il peut exploiter les documents fournis, les règles explicites et les décisions déjà formalisées pour mieux comprendre les demandes suivantes. Cela permet de réduire les allers-retours, de limiter les pertes de contexte et d’obtenir un assistant plus efficace sur les tâches de développement.
 
-Le scénario d'inventaire et la référence métier des lots ont été assistés pour la modélisation, la migration des données existantes, les contrats API, l'interface et les tests. Le format, l'unicité globale et le caractère partiel de l'inventaire ont été validés humainement.
+L’IA a notamment été utilisée pour assister :
 
-Le CRUD Article a été assisté pour la recherche unifiée, les invariants de modification et la désactivation logique. Le choix de conserver l'historique plutôt que d'effectuer une suppression physique a été validé humainement après analyse des relations EF.
+- la réflexion initiale sur l’architecture et la modélisation ;
+- la structuration de la solution en couches ;
+- la conception du modèle de domaine ;
+- la génération ou l’adaptation de code backend ;
+- la génération ou l’adaptation de code frontend ;
+- l’ajout de tests ;
+- la rédaction et la mise à jour du dossier `docs` ;
+- la préparation de certains schémas et explications techniques.
 
-La gestion bilingue des erreurs métier a été assistée pour l'inventaire des exceptions, la définition des codes stables, le contrat HTTP, l'intégration i18n et les tests de contrat. Le découpage entre codes backend et textes frontend a été relu et validé humainement.
+Les choix d’architecture, les arbitrages métier, les contrats API, les règles fonctionnelles et les limites de l’implémentation ont été relus, adaptés et validés manuellement avant intégration.
 
-Le code final a été relu, adapté et organisé manuellement.
-
-Les choix d’architecture, les arbitrages métier, les contrats API et les limites fonctionnelles ont été validés humainement avant intégration.
+Le code final n’a pas été intégré sans relecture : les propositions générées ont été vérifiées, ajustées et organisées manuellement afin de conserver une cohérence globale avec l’architecture du projet.
 
 ---
 
